@@ -100,17 +100,38 @@ export default function Demo() {
     admin: "/demo/admin",
   };
 
-  const handleLogin = (config: RoleConfig) => {
+  const handleLogin = async (config: RoleConfig) => {
     if (loading) return;
     setLoading(config.role);
 
     // Replace this with your actual auth call, e.g.:
     // const { token } = await authService.login(config.email, config.password);
     // navigate(roleRoutes[config.role]);
-    setTimeout(() => {
+    try{
+
+      const fetchToken = await fetch("http://localhost:3000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: config.email,
+          password: config.password
+        })
+      }).catch((e) => {
+        console.error("Network error:", e);
+        throw new Error("Network error");
+      });
+      const tokes = await fetchToken.json();
+      console.log("Received token:", tokes);
+        setTimeout(() => {
+        setLoading(null);
+        navigate(roleRoutes[config.role]);
+      }, 1400);
+    }catch(e){
       setLoading(null);
-      navigate(roleRoutes[config.role]);
-    }, 1400);
+      alert("Login failed");
+      return;
+    }
+    
   };
 
   return (

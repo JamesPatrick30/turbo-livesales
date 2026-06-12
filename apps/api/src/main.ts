@@ -1,8 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
+  // console.log(`Secret Key: ${process.env.JWT_SECRET}`); // Log the secret key to verify it's loaded
   const app = await NestFactory.create(AppModule);
+
+  // Enable CORS for development
+  app.enableCors({
+    origin: 'http://localhost:5173', // Adjust this to match your frontend URL
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
