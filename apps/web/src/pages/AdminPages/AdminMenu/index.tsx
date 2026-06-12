@@ -1,5 +1,5 @@
 import AdminNav from "../../../components/AdminComponents/AdminNav";
-
+import { toast } from "react-toastify";
 const MENU_ITEMS = [
   { id: 1, name: "Sinigang na Baboy", category: "Main", price: 185, available: true },
   { id: 2, name: "Adobong Manok", category: "Main", price: 160, available: true },
@@ -29,6 +29,12 @@ const CATEGORY_STYLES: Record<string, string> = {
 };
 
 export default function AdminMenu() {
+    const ViteApp = import.meta.env.VITE_APP;
+    const HandleEdit = () => {
+        if (ViteApp === "Demo") {
+            toast.info("Demo mode - edit disabled");
+        }
+    };
   return (
     <div className="flex min-h-screen bg-[#0d0d0f] text-white">
       <AdminNav />
@@ -98,7 +104,10 @@ export default function AdminMenu() {
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       {/* Wire to edit/delete in real app */}
-                      <button className="text-xs text-neutral-600 hover:text-neutral-300 transition-colors">
+                      <button 
+                      className="text-xs text-neutral-600 hover:text-neutral-300 transition-colors"
+                      onClick={HandleEdit}
+                      >
                         Edit
                       </button>
                     </td>

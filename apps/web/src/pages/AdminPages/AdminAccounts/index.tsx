@@ -1,5 +1,5 @@
 import AdminNav from "../../../components/AdminComponents/AdminNav";
-
+import { toast } from "react-toastify";
 const ACCOUNTS = [
   { id: 1, name: "Maria Santos", email: "cashier@demo.com", role: "cashier", status: "active", joined: "Jan 12, 2026" },
   { id: 2, name: "Juan dela Cruz", email: "cook@demo.com", role: "cook", status: "active", joined: "Jan 12, 2026" },
@@ -24,6 +24,12 @@ function Avatar({ name }: { name: string }) {
 
 export default function AdminAccounts() {
     const ViteApp = import.meta.env.VITE_APP;
+
+    const HandleEdit = () => {
+        if (ViteApp === "Demo") {
+            toast.info("Demo mode - edit disabled");
+        }
+    };
   return (
     <div className="flex min-h-screen bg-[#0d0d0f] text-white">
       <AdminNav />
@@ -104,11 +110,8 @@ export default function AdminAccounts() {
                     <td className="px-5 py-3.5 text-xs text-neutral-600">{account.joined}</td>
                     <td className="px-5 py-3.5 text-right">
                       <button 
-                        onClick={() => {
-                            if (ViteApp === "Demo") {
-                                alert(`Edit user: ${account.name}`);
-                            }
-                        }}
+                        onClick={HandleEdit}
+
                         className="text-xs text-neutral-600 hover:text-neutral-300 transition-colors"
                       >
                         Edit
