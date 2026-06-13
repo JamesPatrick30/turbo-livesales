@@ -1,159 +1,203 @@
-# Turborepo starter
+<div align="center">
 
-This Turborepo starter is maintained by the Turborepo core team.
+# 🧾 LiveSales
 
-## Using this example
+**A real-time order management demo built for speed and clarity.**
 
-Run the following command:
+![Stack](https://img.shields.io/badge/Frontend-React.js%20%2B%20Vite-61DAFB?style=flat-square&logo=react)
+![Stack](https://img.shields.io/badge/Backend-NestJS-E0234E?style=flat-square&logo=nestjs)
+![Stack](https://img.shields.io/badge/Monorepo-Turborepo-EF4444?style=flat-square&logo=turborepo)
+![Stack](https://img.shields.io/badge/Package%20Manager-pnpm-F69220?style=flat-square&logo=pnpm)
+![Stack](https://img.shields.io/badge/Database-Neon%20PostgreSQL-00E5A0?style=flat-square&logo=postgresql)
+![Status](https://img.shields.io/badge/Status-Demo-yellow?style=flat-square)
 
-```sh
-npx create-turbo@latest
+> ⚠️ **Demo Project** — LiveSales is scoped as a portfolio demonstration focused on real-time order management. It is not intended for production use.
+
+</div>
+
+---
+
+## 📌 What is LiveSales?
+
+LiveSales is a lightweight, real-time order management system designed to simulate a live sales floor — think a small restaurant or counter-service shop where orders need to flow from cashier to kitchen instantly.
+
+The app is intentionally **scoped down** to keep things clean and focused:
+
+- ✅ Place and manage orders
+- ✅ Real-time order status updates via WebSockets
+- ✅ Role-based views (Cashier, Cook, Admin)
+- ❌ No inventory management
+- ❌ No ingredient tracking
+
+---
+
+## 🗂️ Project Structure
+
+This is a **Turborepo monorepo** managed with **pnpm workspaces**.
+
+```
+livesales/
+├── apps/
+│   ├── web/          # React.js + Vite — Customer & Staff Frontend
+│   └── api/          # NestJS — REST API + WebSocket Server
+├── packages/
+│   └── shared/       # Shared types, DTOs, and constants
+├── turbo.json        # Turborepo pipeline config
+├── pnpm-workspace.yaml
+└── package.json
 ```
 
-## What's inside?
+---
 
-This Turborepo includes the following packages/apps:
+## 🧰 Tech Stack
 
-### Apps and Packages
+| Layer        | Technology                          |
+|--------------|-------------------------------------|
+| Frontend     | React.js, Vite, TailwindCSS         |
+| Backend      | NestJS, TypeScript                  |
+| Real-time    | Socket.IO                           |
+| Database     | PostgreSQL via **Neon** *(coming soon)* |
+| ORM          | Prisma *(planned)*                  |
+| Monorepo     | Turborepo                           |
+| Package Mgr  | pnpm                                |
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+---
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## 🚀 Getting Started
 
-### Utilities
+### Prerequisites
 
-This Turborepo has some additional tools already setup for you:
+Make sure you have the following installed:
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+- **Node.js** v18+
+- **pnpm** v8+
 
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+npm install -g pnpm
 ```
 
-Without global `turbo`, use your package manager:
+### 1. Clone the repository
 
-```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
+```bash
+git clone https://github.com/JamesPatrick30/livesales.git
+cd livesales
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 2. Install dependencies
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
+```bash
+pnpm install
 ```
 
-Without global `turbo`:
+### 3. Set up environment variables
 
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+Copy the example env files for each app:
+
+```bash
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
 ```
 
-### Develop
+> 🔌 **Database:** Neon free-tier PostgreSQL support is coming soon. Once set up, add your `DATABASE_URL` to `apps/api/.env`.
 
-To develop all apps and packages, run the following command:
+### 4. Run the development servers
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
+```bash
+pnpm dev
 ```
 
-Without global `turbo`, use your package manager:
+Turborepo will spin up both the frontend and backend in parallel:
 
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
+| App      | URL                    |
+|----------|------------------------|
+| Frontend | http://localhost:5173  |
+| Backend  | http://localhost:3000  |
+
+---
+
+## 👥 Demo Accounts
+
+The app ships with pre-seeded demo accounts so you can explore each role immediately:
+
+| Role     | Email               | Password   |
+|----------|---------------------|------------|
+| Admin    | admin@demo.com      | demo1234   |
+| Cashier  | cashier@demo.com    | demo1234   |
+| Cook     | cook@demo.com       | demo1234   |
+
+> Run `pnpm seed` inside `apps/api/` to populate the database with demo data.
+
+---
+
+## 🔄 Order Flow
+
+```
+Cashier places order
+        │
+        ▼
+  Order created (status: PENDING)
+        │
+        ▼  [Socket.IO broadcast]
+        │
+        ▼
+  Cook receives order on their screen
+        │
+        ▼
+  Cook marks order as PREPARING → READY
+        │
+        ▼  [Socket.IO broadcast]
+        │
+        ▼
+  Cashier / Admin sees live status update
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+---
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+## 📡 API Overview
 
-```sh
-turbo dev --filter=web
-```
+Base URL: `http://localhost:3000/api`
 
-Without global `turbo`:
+| Method | Endpoint              | Description              | Auth Required |
+|--------|-----------------------|--------------------------|---------------|
+| POST   | `/auth/login`         | Login and get JWT token  | ❌            |
+| GET    | `/orders`             | Fetch all orders         | ✅            |
+| POST   | `/orders`             | Create a new order       | ✅ Cashier    |
+| PATCH  | `/orders/:id/status`  | Update order status      | ✅ Cook       |
+| GET    | `/orders/:id`         | Get a single order       | ✅            |
 
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
+### WebSocket Events
 
-### Remote Caching
+| Event              | Direction         | Payload              |
+|--------------------|-------------------|----------------------|
+| `order:created`    | Server → Clients  | New order object     |
+| `order:updated`    | Server → Clients  | Updated order object |
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+---
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+## 🗺️ Roadmap
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+- [x] Project scaffold (Turborepo + pnpm)
+- [x] NestJS API with authentication
+- [x] React frontend with role-based views
+- [x] Real-time updates with Socket.IO
+- [ ] Connect Neon PostgreSQL (free tier)
+- [ ] Prisma schema + seed script
+- [ ] Order history view
+- [ ] Admin dashboard with basic stats
+- [ ] Deploy to Vercel (web) + Railway/Render (api)
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+---
 
-```sh
-cd my-turborepo
-turbo login
-```
+## 🧑‍💻 Author
 
-Without global `turbo`, use your package manager:
+**James Patrick** — [@JamesPatrick30](https://github.com/JamesPatrick30)
 
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
+Portfolio: [patricksnchz.vercel.app](https://patricksnchz.vercel.app)
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+---
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+<div align="center">
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+Built as a portfolio demo · Not for production use
 
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+</div>
