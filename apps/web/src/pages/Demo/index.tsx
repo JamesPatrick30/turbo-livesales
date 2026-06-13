@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, type JSX } from "react";
+import api from "../../lib/axios";
 type Role = "cashier" | "cook" | "admin";
 
 interface RoleConfig {
@@ -104,34 +105,18 @@ export default function Demo() {
     if (loading) return;
     setLoading(config.role);
 
-    // Replace this with your actual auth call, e.g.:
-    // const { token } = await authService.login(config.email, config.password);
-    // navigate(roleRoutes[config.role]);
-    try{
-
-      const fetchToken = await fetch("http://localhost:3000/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: config.email,
-          password: config.password
-        })
-      }).catch((e) => {
-        console.error("Network error:", e);
-        throw new Error("Network error");
-      });
-      const tokes = await fetchToken.json();
-      console.log("Received token:", tokes);
-        setTimeout(() => {
-        setLoading(null);
+    try {
+        await api.post("/auth/login", {
+            role: config.role,
+            email: config.email,
+            password: config.password,
+        });
+        // Don't clear loading here — let the page transition handle it
         navigate(roleRoutes[config.role]);
-      }, 1400);
-    }catch(e){
-      setLoading(null);
-      alert("Login failed");
-      return;
+    } catch (e) {
+        setLoading(null); // only clear on failure
+        alert("Login failed");
     }
-    
   };
 
   return (
