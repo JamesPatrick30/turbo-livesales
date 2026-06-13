@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { LoginRequest, LoginResponse } from '@repo/types';
 import { JwtService } from '@nestjs/jwt';
+import type { Response } from 'Express';
 import * as bcrypt from 'bcrypt';
 @Injectable()
 export class AuthService {
@@ -19,17 +20,35 @@ export class AuthService {
     handlePasswordCompare(password: string, hash: string): Promise<boolean> {
         return bcrypt.compare(password, hash);
     }
-    async HandleLogin(authRequest: LoginRequest): Promise<LoginResponse> {
-        const { email, password } = authRequest;
 
-        // For demonstration, we use a hardcoded password hash. In a real application, you'd fetch this from the database.
-        const passwordHash = await this.handlePasswordHash('demo123');
+    async HandleLogin(authRequest: LoginRequest, res: Response): Promise<LoginResponse> {
+        const { email, password, role } = authRequest;
 
-        if (await this.handlePasswordCompare(password, passwordHash)){
-            return Promise.reject(new NotFoundException('Invalid credentials'));
+        console.log(`Login attempt for email: ${email}, role: ${role}`);
+        if (password !== 'demo1234') {
+            throw new NotFoundException('Invalid credentials');
         }
-        const { accessToken, refreshToken } = this.HandleCreateToken({ email });
-        console.log(`User ${email} logged in with password ${password}`);
-        return Promise.resolve({ accessToken, refreshToken });
+
+        // Sign ONCE
+        const { accessToken, refreshToken } = this.HandleCreateToken({ email, role });
+
+        // Reuse the same tokens for cookies
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+        });
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+        });
+        console.log("the loging is successful");
+        return { accessToken, refreshToken };
+    }
+
+    HandleRefresh(res: Response): Promise<LoginResponse> {
+        // In a real application, you'd verify the refresh token and generate new tokens accordingly.
+        return Promise.resolve({ accessToken: '', refreshToken: '' });
     }
 }
