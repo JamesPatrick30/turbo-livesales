@@ -1,6 +1,10 @@
-import { IsEmail, IsNotEmpty, MaxLength } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, MaxLength } from 'class-validator';
 import { LoginRequest, LoginResponse } from '@repo/types';
 export class LoginDto implements LoginRequest {
+
+    @IsEnum(["cashier", "cook", "admin"])
+    role!: "cashier" | "cook" | "admin";
+    
     @IsEmail()
     email!: string;
 

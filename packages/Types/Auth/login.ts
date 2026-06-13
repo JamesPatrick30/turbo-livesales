@@ -1,4 +1,5 @@
 export interface LoginRequest {
+  role: "cashier" | "cook" | "admin";
   email: string;
   password: string;
 }
