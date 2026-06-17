@@ -1,5 +1,5 @@
-import { NavLink } from "react-router-dom";
-
+import { useNavigate, NavLink } from "react-router-dom";
+import api from "../../lib/axios";
 interface NavItem {
   label: string;
   to: string;
@@ -53,6 +53,17 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export default function AdminNav() {
+  const router = useNavigate();
+  const handleLogout = async () => {
+    // Implement logout logic here, e.g., clear tokens, redirect to login page, etc.
+    try {
+      await api.post('/auth/logout');
+      router('/demo');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  }
+
   return (
     <aside className="w-52 min-h-screen bg-[#0d0d0f] border-r border-white/5 flex flex-col">
       {/* Brand */}
@@ -87,15 +98,16 @@ export default function AdminNav() {
 
       {/* Footer */}
       <div className="px-5 py-4 border-t border-white/5">
-        <a
-          href="/demo"
+        <button
+          onClick={handleLogout}
+
           className="flex items-center gap-2 text-xs text-neutral-600 hover:text-neutral-400 transition-colors"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
           Switch role
-        </a>
+        </button>
       </div>
     </aside>
   );
