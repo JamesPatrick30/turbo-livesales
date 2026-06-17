@@ -3,9 +3,18 @@ import { LoginRequest, LoginResponse } from '@repo/types';
 import { JwtService } from '@nestjs/jwt';
 import type { Response } from 'Express';
 import * as bcrypt from 'bcrypt';
+
+//database
+import { PrismaService } from '../prisma/prisma.service';
+
+//dtos
+import { LoginDto } from './dtos/login.dto';
+import { SignupDto, SignupResponseDto } from './dtos/signup.dto';
+
+
 @Injectable()
 export class AuthService {
-    constructor(private readonly jwtService: JwtService) {}
+    constructor(private readonly jwtService: JwtService, private readonly prismaService: PrismaService) {}
 
     HandleCreateToken(data: any): { accessToken: string, refreshToken: string } {
         const accessToken = this.jwtService.sign(data, { expiresIn: '1h' });
@@ -21,16 +30,42 @@ export class AuthService {
         return bcrypt.compare(password, hash);
     }
 
-    async HandleLogin(authRequest: LoginRequest, res: Response): Promise<LoginResponse> {
-        const { email, password, role } = authRequest;
+    async HandleSignup(signupDto: SignupDto): Promise<SignupResponseDto> {
+        const { email, password, name } = signupDto;
 
-        console.log(`Login attempt for email: ${email}, role: ${role}`);
-        if (password !== 'demo1234') {
+        const hashedPassword = await this.handlePasswordHash(password);
+
+        await this.prismaService.client.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+                role: 'ADMIN', // Default role, you can change this as needed
+                name
+            },
+        });
+
+        return { message: 'User created successfully' };
+    }
+
+    async HandleLogin(loginDto: LoginDto, res: Response): Promise<LoginResponse> {
+        const { email, password, role } = loginDto;
+
+
+        const user = await this.prismaService.client.user.findUnique({
+            where: { email },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        const isPasswordValid = await this.handlePasswordCompare(password, user.password);
+        if (!isPasswordValid) {
             throw new NotFoundException('Invalid credentials');
         }
 
         // Sign ONCE
-        const { accessToken, refreshToken } = this.HandleCreateToken({ email, role });
+        const { accessToken, refreshToken } = this.HandleCreateToken({ id: user.id, email, role });
 
         // Reuse the same tokens for cookies
         res.cookie('accessToken', accessToken, {
@@ -50,5 +85,11 @@ export class AuthService {
     HandleRefresh(res: Response): Promise<LoginResponse> {
         // In a real application, you'd verify the refresh token and generate new tokens accordingly.
         return Promise.resolve({ accessToken: '', refreshToken: '' });
+    }
+
+    async HandleLogout(res: Response): Promise<{ message: string }> {
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
+        return { message: 'Logged out successfully' };
     }
 }

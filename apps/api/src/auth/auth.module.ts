@@ -5,6 +5,9 @@ import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { PrismaModule } from '../prisma/prisma.module';
+import { AdminGuard } from './guards/admin.guard';
+import { AdminStrategy } from './strategies/admin.strategy';
 @Module({
   imports: [
     JwtModule.registerAsync({
@@ -16,9 +19,10 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
         },
       }),
     }),
+    PrismaModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard],
-  exports: [AuthService, JwtModule, JwtAuthGuard],  // Export AuthService, JwtModule, and JwtAuthGuard for use in other modules
+  providers: [AuthService, JwtStrategy, AdminStrategy, JwtAuthGuard, AdminGuard],
+  exports: [AuthService, JwtStrategy, AdminStrategy, JwtAuthGuard, AdminGuard],  // Export AuthService, JwtModule, and JwtAuthGuard for use in other modules
 })
 export class AuthModule {}
