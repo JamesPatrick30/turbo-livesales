@@ -36,6 +36,23 @@
       "dependsOn": ["^db:studio"],
       "inputs": ["$TURBO_DEFAULT$"],
       "outputs": []
+    },
+    "db:build": {
+      "dependsOn": ["^db:build"],
+      "inputs": ["$TURBO_DEFAULT$", "src/**/*.ts"],
+      "outputs": ["dist/**"]
+    },
+    "db:dev": {
+      "dependsOn": ["^db:dev"],
+      "cache": false,
+      "persistent": true,
+      "inputs": ["$TURBO_DEFAULT$", "src/**/*.ts"],
+      "outputs": ["dist/**"]
+    },
+    "db:reset": {
+      "dependsOn": ["^db:reset"],
+      "inputs": ["$TURBO_DEFAULT$", "prisma/migrations/**"],
+      "outputs": []
     }
   }
 }

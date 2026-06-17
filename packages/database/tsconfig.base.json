@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "types": ["node"],
+    "strict": true,
+    "target": "ES2022"
+  }
+}
