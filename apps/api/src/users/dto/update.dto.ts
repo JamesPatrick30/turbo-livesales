@@ -15,13 +15,13 @@ export class UpdateUserRequestDto implements UpdateUserDto {
     name?: string;
 
     @IsOptional()
-    @IsEnum(["cashier", "cook"])
-    role?: "cashier" | "cook";
+    @IsEnum(["CASHIER", "COOK"])
+    role!: "CASHIER" | "COOK";
 }
 
 export class UpdateUserRoleRequestDto implements UpdateUserRoleDto {
-    @IsEnum(["cashier", "cook"])
-    role!: "cashier" | "cook";
+    @IsEnum(["CASHIER", "COOK"])
+    role!: "CASHIER" | "COOK";
 }
 
 export class UpdateUserResponse implements UpdateUserResponseDto {

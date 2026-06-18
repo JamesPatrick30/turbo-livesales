@@ -12,8 +12,8 @@ export class CreateUserDto {
     @IsNotEmpty()
     name!: string;
 
-    @IsEnum(["cashier", "cook"])
-    role!: "cashier" | "cook";
+    @IsEnum(["CASHIER", "COOK"])
+    role!: "CASHIER" | "COOK";
 }
 
 export class CreateUserResponseDto {
