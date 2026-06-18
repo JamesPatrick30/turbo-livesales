@@ -1,5 +1,5 @@
 export interface UpdateUserRoleDto {
-    role: "cashier" | "cook";
+    role: "CASHIER" | "COOK";
 }
 
 export interface UpdateUserResponseDto {
@@ -10,5 +10,5 @@ export interface UpdateUserDto {
     email?: string;
     password?: string;
     name?: string;
-    role?: "cashier" | "cook";
+    role?: "CASHIER" | "COOK";
 }

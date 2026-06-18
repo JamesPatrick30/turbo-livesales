@@ -2,7 +2,7 @@ export interface CreateUserDto {
     email: string;
     password: string;
     name: string;
-    role: "cashier" | "cook";
+    role: "CASHIER" | "COOK";
 }
 
 export interface CreateUserResponseDto {
