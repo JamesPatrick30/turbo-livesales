@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, type JSX } from "react";
-import api from "../../lib/axios";
+import api from "../../shared/lib/axios";
 type Role = "cashier" | "cook" | "admin";
 
 interface RoleConfig {

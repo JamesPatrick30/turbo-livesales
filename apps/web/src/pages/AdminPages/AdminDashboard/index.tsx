@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import AdminNav from "../../../components/AdminComponents/AdminNav";
-import api from "../../../lib/axios";
+import api from "../../../shared/lib/axios";
 import { useEffect } from "react";
 // ── Data ─────────────────────────────────────────────────────────────────────
 
