@@ -1,4 +1,4 @@
-import AdminNav from "../../../components/AdminComponents/AdminNav";
+import AdminNav from "../../../shared/components/AdminComponents/AdminNav";
 import { toast } from "react-toastify";
 const MENU_ITEMS = [
   { id: 1, name: "Sinigang na Baboy", category: "Main", price: 185, available: true },
@@ -71,7 +71,7 @@ export default function AdminMenu() {
           </div>
 
           {/* Table */}
-          <div className="bg-white/[0.03] border border-white/5 rounded-xl overflow-hidden">
+          <div className="bg-white/3 border border-white/5 rounded-xl overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/5">
@@ -86,7 +86,7 @@ export default function AdminMenu() {
                 {MENU_ITEMS.map((item) => (
                   <tr
                     key={item.id}
-                    className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors"
+                    className="border-b border-white/3 hover:bg-white/2 transition-colors"
                   >
                     <td className="px-5 py-3.5 text-sm font-medium text-white">{item.name}</td>
                     <td className="px-5 py-3.5">

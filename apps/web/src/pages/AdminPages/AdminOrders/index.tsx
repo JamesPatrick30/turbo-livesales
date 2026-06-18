@@ -1,4 +1,4 @@
-import AdminNav from "../../../components/AdminComponents/AdminNav";
+import AdminNav from "../../../shared/components/AdminComponents/AdminNav";
 
 const ORDERS = [
   { id: "#0041", table: "Table 3", items: "Sinigang na Baboy, Steamed Rice ×2, Iced Tea ×2", time: "2:14 PM", total: "₱490", status: "preparing" },
@@ -54,7 +54,7 @@ export default function AdminOrders() {
           </div>
 
           {/* Table */}
-          <div className="bg-white/[0.03] border border-white/5 rounded-xl overflow-hidden">
+          <div className="bg-white/3 border border-white/5 rounded-xl overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/5">
@@ -70,7 +70,7 @@ export default function AdminOrders() {
                 {ORDERS.map((order) => (
                   <tr
                     key={order.id}
-                    className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors"
+                    className="border-b border-white/3 hover:bg-white/2 transition-colors"
                   >
                     <td className="px-5 py-3.5 text-sm font-medium text-white">{order.id}</td>
                     <td className="px-5 py-3.5 text-sm text-neutral-400">{order.table}</td>

@@ -167,7 +167,7 @@ export default function Demo() {
                 disabled={isDisabled}
                 className={`
                   relative text-left border rounded-xl p-6 transition-all duration-200 group
-                  bg-white/[0.02] ${config.accent.border} ${config.accent.bg}
+                  bg-white/2 ${config.accent.border} ${config.accent.bg}
                   disabled:opacity-40 disabled:cursor-not-allowed
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30
                 `}
@@ -223,7 +223,7 @@ export default function Demo() {
         </div>
 
         {/* Credentials note */}
-        <div className="mt-10 border border-white/5 rounded-xl bg-white/[0.02] px-6 py-4 w-full max-w-3xl">
+        <div className="mt-10 border border-white/5 rounded-xl bg-white/2 px-6 py-4 w-full max-w-3xl">
           <p className="text-xs text-neutral-600 font-medium mb-3 uppercase tracking-wider">
             Demo credentials
           </p>

@@ -134,7 +134,7 @@ export default function AdminDashboard() {
             {METRICS.map((m) => (
               <div
                 key={m.label}
-                className="bg-white/[0.03] border border-white/5 rounded-xl p-5"
+                className="bg-white/3 border border-white/5 rounded-xl p-5"
               >
                 <p className="text-xs text-neutral-500 mb-3">{m.label}</p>
                 <p className="text-3xl font-semibold tracking-tight text-white leading-none mb-2">
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* ── Hourly chart — full width ── */}
-          <div className="bg-white/[0.03] border border-white/5 rounded-xl p-6">
+          <div className="bg-white/3 border border-white/5 rounded-xl p-6">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <p className="text-sm font-medium text-white">Revenue by hour</p>
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
             {/* Top items */}
-            <div className="bg-white/[0.03] border border-white/5 rounded-xl p-6">
+            <div className="bg-white/3 border border-white/5 rounded-xl p-6">
               <p className="text-sm font-medium text-white mb-1">Top items</p>
               <p className="text-xs text-neutral-600 mb-5">Most ordered today</p>
               <div className="space-y-4">
@@ -230,7 +230,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Active orders */}
-            <div className="bg-white/[0.03] border border-white/5 rounded-xl overflow-hidden">
+            <div className="bg-white/3 border border-white/5 rounded-xl overflow-hidden">
               <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-white">Active orders</p>
@@ -244,11 +244,11 @@ export default function AdminDashboard() {
                 </Link>
               </div>
 
-              <div className="divide-y divide-white/[0.04]">
+              <div className="divide-y divide-white/5">
                 {ACTIVE_ORDERS.map((order) => (
                   <div
                     key={order.id}
-                    className="flex items-center justify-between px-6 py-3.5 hover:bg-white/[0.02] transition-colors"
+                    className="flex items-center justify-between px-6 py-3.5 hover:bg-white/2 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <div>
