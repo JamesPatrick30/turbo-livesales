@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, Res, Get, UseGuards, Req, Patch } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
 import type { Response, Request } from 'Express';
@@ -44,5 +44,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   getProfile(@Req() req: Request){
     return req.user as { id: string; email: string; role: string };
+  }
+
+  @Patch('update/password')
+  @UseGuards(JwtAuthGuard)
+  async updatePassword(@Req() req: Request, @Body() body: { currentPassword: string; newPassword: string }): Promise<{ message: string }> {
+    const user = req.user as { id: string; email: string; role: string };
+    return this.authService.HandleUpdatePassword(user.id, body.currentPassword, body.newPassword);
   }
 }

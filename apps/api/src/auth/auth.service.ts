@@ -92,4 +92,28 @@ export class AuthService {
         res.clearCookie('refreshToken');
         return { message: 'Logged out successfully' };
     }
+
+    async HandleUpdatePassword(userId: string, currentPassword: string, newPassword: string): Promise<{ message: string }> {
+        const user = await this.prismaService.client.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        const isPasswordValid = await this.handlePasswordCompare(currentPassword, user.password);
+        if (!isPasswordValid) {
+            throw new NotFoundException('Invalid current password');
+        }
+
+        const hashedNewPassword = await this.handlePasswordHash(newPassword);
+
+        await this.prismaService.client.user.update({
+            where: { id: userId },
+            data: { password: hashedNewPassword },
+        });
+
+        return { message: 'Password updated successfully' };
+    }
 }
