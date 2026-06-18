@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import AdminNav from "../../../components/AdminComponents/AdminNav";
+import AdminNav from "../../../shared/components/AdminComponents/AdminNav";
 import api from "../../../shared/lib/axios";
 import { useEffect } from "react";
 // ── Data ─────────────────────────────────────────────────────────────────────

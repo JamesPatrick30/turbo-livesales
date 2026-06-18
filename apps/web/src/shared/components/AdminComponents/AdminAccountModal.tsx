@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type Account from "../../shared/types/account";
+import type Account from "../../types/account";
 type Role = "cashier" | "cook" ;
 
 // interface Account {

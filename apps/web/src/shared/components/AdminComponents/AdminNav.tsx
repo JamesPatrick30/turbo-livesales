@@ -1,5 +1,5 @@
 import { useNavigate, NavLink } from "react-router-dom";
-import api from "../../shared/lib/axios";
+import api from "../../lib/axios";
 interface NavItem {
   label: string;
   to: string;

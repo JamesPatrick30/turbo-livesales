@@ -1,8 +1,8 @@
 // import { toast } from "react-toastify";
 
 // components
-import AdminNav from "../../../components/AdminComponents/AdminNav";
-import AdminAccountModal  from "../../../components/AdminComponents/AdminAccountModal";
+import AdminNav from "../../../shared/components/AdminComponents/AdminNav";
+import AdminAccountModal  from "../../../shared/components/AdminComponents/AdminAccountModal";
 import { useState } from "react";
 import type Account from "../../../shared/types/account";
 
