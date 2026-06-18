@@ -14,7 +14,7 @@ export class UsersService {
         return await bcrypt.hash(password, 10);
     }
 
-    async createAdminUser(dto: CreateUserDto, adminOwnerId: string): Promise<{ message: string }> {
+    async createAdminUser(dto: CreateUserDto, adminOwnerId: string) {
         const { email, password, name, role } = dto;
         const hashedPassword = await this.ahandlePasswordHash(password);
 
@@ -27,23 +27,36 @@ export class UsersService {
         }
 
         const ConvertedRole = role.toUpperCase() as 'CASHIER' | 'COOK';
-        await this.prisma.client.user.create({
+        const newUser = await this.prisma.client.user.create({
             data: {
                 email,
                 password: hashedPassword,
                 name,
                 role: ConvertedRole,
                 adminOwnerId: adminOwnerId
-            }
+            },select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+            },
         });
-        return { message: 'Admin user created successfully' };
+        return { message: 'Admin user created successfully', newUser };
     }
 
     async getAllUsers(adminOwnerId: string): Promise<any[]> {
         return this.prisma.client.user.findMany({
             where:{
                 adminOwnerId: adminOwnerId
-            }
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                // status: true,
+                // joined: true,
+            },
         });
     }
 
@@ -77,6 +90,8 @@ export class UsersService {
     }
 
     async updateUser(userId: string, dto: UpdateUserRequestDto, adminOwnerId: string): Promise<{ message: string }> {
+        console.log("Updating user with ID:", userId);
+        console.log("Update data:", dto);
         const user = await this.prisma.client.user.findFirst({
             where: {
                 id: userId,
@@ -88,24 +103,42 @@ export class UsersService {
             return { message: 'User not found or you do not have permission to update this user' };
         }
 
-        const { email, password, name } = dto;
+        const { email, password, name, role } = dto;
+        const ConvertedRole = role ? role.toUpperCase() as 'CASHIER' | 'COOK' : undefined;
 
-        let hashedPassword: string | undefined;
+        const updateData: any = {};
+
+        if (email !== undefined) updateData.email = email;
+        if (name !== undefined) updateData.name = name;
+        if (role !== undefined) updateData.role = ConvertedRole;
+
         if (password) {
-            hashedPassword = await this.ahandlePasswordHash(password);
+            updateData.password = await this.ahandlePasswordHash(password);
         }
 
         await this.prisma.client.user.update({
             where: {
                 id: userId,
-                adminOwnerId: adminOwnerId
             },
-            data: {
-                email,
-                password: hashedPassword,
-                name
-            }
+            data: updateData,
         });
+        // let hashedPassword: string | undefined;
+        // if (password) {
+        //     hashedPassword = await this.ahandlePasswordHash(password);
+        // }
+
+        // await this.prisma.client.user.update({
+        //     where: {
+        //         id: userId,
+        //         adminOwnerId: adminOwnerId
+        //     },
+        //     data: {
+        //         email,
+        //         password: hashedPassword,
+        //         name,
+        //         role
+        //     }
+        // });
 
         return { message: 'User updated successfully' };
     }

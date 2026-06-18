@@ -1,22 +1,17 @@
-// import { toast } from "react-toastify";
-
+import { toast } from "react-toastify";
+import api from "../../../shared/lib/axios";
 // components
 import AdminNav from "../../../shared/components/AdminComponents/AdminNav";
 import AdminAccountModal  from "../../../shared/components/AdminComponents/AdminAccountModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type Account from "../../../shared/types/account";
-
-const ACCOUNTS: Account[] = [
-  { id: "1", name: "Maria Santos", email: "cashier@demo.com", role: "cashier"},
-  { id: "2", name: "Juan dela Cruz", email: "cook@demo.com", role: "cook"},
-  { id: "3", name: "Boss Admin", email: "admin@demo.com", role: "cook"},
-  { id: "4", name: "Ana Reyes", email: "cashier2@demo.com", role: "cashier"},
-];
-
+import AdminCreateUserModal from "../../../shared/components/AdminComponents/AdminCreateUsers";
+import type {UpdateAccountsRequest, UpdateAccountsResponse} from "../../../shared/types/updateAccounts";
+import type {CreateAccountsRequest} from "../../../shared/types/createAccounts";
 const ROLE_STYLES: Record<string, string> = {
-  cashier: "bg-amber-500/15 text-amber-400",
-  cook: "bg-orange-500/15 text-orange-400",
-  admin: "bg-violet-500/15 text-violet-400",
+  CASHIER: "bg-amber-500/15 text-amber-400",
+  COOK: "bg-orange-500/15 text-orange-400",
+
 };
 
 function Avatar({ name }: { name: string }) {
@@ -28,19 +23,34 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
-// type Account = {
-//   id: number;
-//   name: string;
-//   email: string;
-//   role: string;
-//   status: string;
-//   joined: string;
-// };
+
 export default function AdminAccounts() {
     // const ViteApp = import.meta.env.VITE_APP;
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+    const [accounts, setAccounts] = useState<Account[]>([]);
+
+    // Fetch all accounts from the API
+    const GetAllAccounts = async () => {
+      try{
+        const response = await api.get("/users");
+        const fixedAccounts = response.data.map((account: Account) => {
+          const role = account.role as "CASHIER" | "COOK";
+          return { ...account, role };
+        });
+        setAccounts(fixedAccounts);
+      }catch(err){
+        console.log(err);
+      }
+    }
+
+    useEffect(() => {
+      GetAllAccounts();
+    }, []);
+
+    // create account modal
+    const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
     const HandleEdit = (account: Account) => {
         setIsModalOpen(true);
         setEditingAccount(account);
@@ -55,12 +65,47 @@ export default function AdminAccounts() {
         setEditingAccount(null);
     }
 
-    type Role = "cashier" | "cook" | "admin";
+    // Align role type with Account.role to avoid incompatible-role errors
+    type AccountRole = Account["role"];
 
-    const onSave = (data: { name: string; email: string; role: Role; password?: string }) => {
+    const onSaveEdit = async (data: UpdateAccountsRequest & { id?: string }) => {
         // Handle save logic here
-        console.log("Saved data:", data);
-        setIsModalOpen(false);
+
+        HandleCloseModal();
+        try{
+          toast.info("Saving changes...");
+          if (!editingAccount?.id || !data.name || !data.email || !data.role) return;
+
+          const reqData: UpdateAccountsRequest = {
+            name: data.name,
+            email: data.email,
+            role: data.role as AccountRole,
+            password: data.password,
+          };
+          const response: {data: UpdateAccountsResponse} = await api.put(`/users/update/${editingAccount.id}`, reqData);
+          toast.dismiss();
+          toast.success(response.data.message);
+          // Update the accounts state with the edited account
+          setAccounts((prevAccounts) =>
+            prevAccounts.map((account) =>
+              account.id === editingAccount.id
+                ? {
+                    ...account,
+                    name: data.name ?? account.name,
+                    email: data.email ?? account.email,
+                    role: data.role as AccountRole,
+                  }
+                : account
+            )
+          );
+        }catch(err: any){
+            // console.error("Error updating account:", err.response?.data || err.message);
+          toast.dismiss();
+
+            toast.error(err.response?.data?.message || "Failed to update account");
+        }
+        // console.log("Saved data:", data);
+        // setIsModalOpen(false);
     };
 
     const onDelete = (id: string) => {
@@ -68,10 +113,30 @@ export default function AdminAccounts() {
         console.log("Deleted account with id:", id);
         setIsModalOpen(false);
     };
+
+    // create user logic
+    const onSaveCreateUser = async (userData: CreateAccountsRequest) => {
+        try{
+            toast.info("Creating user...");
+            const response = await api.post("/users", userData);
+            toast.dismiss();
+            toast.success(response.data.message);
+            console.log("Created user:", response.data.newUser);
+            setAccounts((prev) => [...prev, { id: response.data.newUser.id, name: response.data.newUser.name, email: response.data.newUser.email, role: response.data.newUser.role as AccountRole }]);
+        }catch(err: any){
+            toast.dismiss();
+            toast.error(err.response?.data?.message || "Failed to create user");
+        }
+    };
+
+    const onCloseCreateUserModal = () => {
+        setIsCreateUserModalOpen(false);
+    }
   return (
     <div className="flex min-h-screen bg-[#0d0d0f] text-white">
-      <AdminAccountModal onClose={HandleCloseModal} isOpen={isModalOpen} onSave={onSave} onDelete={onDelete} account={editingAccount} />
+      <AdminAccountModal onClose={HandleCloseModal} isOpen={isModalOpen} onSave={onSaveEdit} onDelete={onDelete} account={editingAccount} />
       <AdminNav />
+      <AdminCreateUserModal onClose={onCloseCreateUserModal} isClosed={!isCreateUserModalOpen} onSave={onSaveCreateUser} />
 
       <main className="flex-1 overflow-y-auto">
         {/* Header */}
@@ -81,7 +146,7 @@ export default function AdminAccounts() {
             {/* <p className="text-sm text-neutral-500 mt-0.5">{ACCOUNTS.length} users · {ACCOUNTS.filter(a => a.status === "active").length} active</p> */}
           </div>
           {/* Wire to invite modal in real app */}
-          <button className="text-xs px-4 py-2 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 transition-colors">
+          <button className="text-xs px-4 py-2 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 transition-colors" onClick={() => setIsCreateUserModalOpen(true)}>
             + Add user
           </button>
         </div>
@@ -90,8 +155,8 @@ export default function AdminAccounts() {
 
           {/* Role summary */}
           <div className="grid grid-cols-3 gap-3">
-            {["cashier", "cook", "admin"].map((role) => {
-              const count = ACCOUNTS.filter((a) => a.role === role).length;
+            {["CASHIER", "COOK"].map((role) => {
+              const count = accounts.filter((a) => a.role === role).length;
               return (
                 <div key={role} className="bg-white/3 border border-white/5 rounded-xl px-4 py-3 flex items-center justify-between">
                   <span className="text-sm text-neutral-400 capitalize">{role}</span>
@@ -112,7 +177,7 @@ export default function AdminAccounts() {
                 </tr>
               </thead>
               <tbody>
-                {ACCOUNTS.map((account) => (
+                {accounts.map((account) => (
                   <tr
                     key={account.id}
                     className="border-b border-white/3 hover:bg-white/2 transition-colors"
