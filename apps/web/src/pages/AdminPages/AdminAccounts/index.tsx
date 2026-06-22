@@ -116,6 +116,7 @@ export default function AdminAccounts() {
           toast.success(res.data.message);
           setAccounts((prev) => prev.filter((account) => account.id !== id));
         } catch (error: any) {
+          toast.dismiss();
           toast.error(error.response.data.message);
         }
     };
