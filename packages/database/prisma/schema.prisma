@@ -22,6 +22,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   items MenuItem[]
+  sales Sales[]
+  cashier Sales[] @relation("CashierSales")
 }
 
 enum UserRole {
@@ -38,14 +40,84 @@ model MenuItem {
 
   name        String
   description String?
-  price       Float
+  price       Decimal @db.Decimal(10, 2)
   category    String
   status      MenuItemStatus @default(AVAILABLE)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  sales SaleItem[]
 }
 
 enum MenuItemStatus {
   AVAILABLE
   UNAVAILABLE
+}
+
+model Sales {
+  id          String   @id @default(uuid())
+
+  adminOwnerId String
+  cashierId    String
+
+  cashier     User     @relation("CashierSales",fields: [cashierId], references: [id])
+  user        User     @relation(fields: [adminOwnerId], references: [id])
+
+  items       SaleItem[]
+
+  paymentMethod PaymentMethod @default(CASH)
+
+  // PENDING, PREPARING, READY, SERVED, VOID
+  orderstatus OrderStatus @default(PENDING)
+
+  // DINE_IN, TAKEAWAY, DELIVERY
+  Ordertype    OrderType
+
+  total       Decimal @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  GOOGLE_PAY
+  GCASH
+  MAYA
+  GOTYME
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+}
+
+enum OrderStatus {
+  PENDING
+  PREPARING
+  READY
+  SERVED
+  VOID
+}
+
+model SaleItem{
+  id          String   @id @default(uuid())
+  salesId     String
+  sales       Sales    @relation(fields: [salesId], references: [id])
+
+  menuItemId  String
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id])
+
+  // item snapshot
+  name        String
+  unitPrice   Decimal @db.Decimal(10, 2)
+  quantity    Int
+  cathegory    String
+
+  lineTotal   Decimal @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+
+  @@index([salesId])
+  @@index([menuItemId])
+  @@index([cathegory])
 }
