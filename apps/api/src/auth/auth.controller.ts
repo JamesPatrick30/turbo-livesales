@@ -30,6 +30,7 @@ export class AuthController {
   refresh(
     @Res({ passthrough: true }) res: Response  // ← and this
   ): Promise<{ accessToken: string; refreshToken: string }> {
+    console.log('Refresh endpoint called');
     return this.authService.HandleRefresh(res);
   }
 
