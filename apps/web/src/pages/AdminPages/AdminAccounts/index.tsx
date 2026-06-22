@@ -101,8 +101,7 @@ export default function AdminAccounts() {
         }catch(err: any){
             // console.error("Error updating account:", err.response?.data || err.message);
           toast.dismiss();
-
-            toast.error(err.response?.data?.message || "Failed to update account");
+          toast.error(err.response?.data?.message || "Failed to update account");
         }
         // console.log("Saved data:", data);
         // setIsModalOpen(false);
@@ -128,7 +127,6 @@ export default function AdminAccounts() {
             const response = await api.post("/users", userData);
             toast.dismiss();
             toast.success(response.data.message);
-            console.log("Created user:", response.data.newUser);
             setAccounts((prev) => [...prev, { id: response.data.newUser.id, name: response.data.newUser.name, email: response.data.newUser.email, role: response.data.newUser.role as AccountRole }]);
         }catch(err: any){
             toast.dismiss();

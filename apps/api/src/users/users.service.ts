@@ -122,23 +122,6 @@ export class UsersService {
             },
             data: updateData,
         });
-        // let hashedPassword: string | undefined;
-        // if (password) {
-        //     hashedPassword = await this.ahandlePasswordHash(password);
-        // }
-
-        // await this.prisma.client.user.update({
-        //     where: {
-        //         id: userId,
-        //         adminOwnerId: adminOwnerId
-        //     },
-        //     data: {
-        //         email,
-        //         password: hashedPassword,
-        //         name,
-        //         role
-        //     }
-        // });
 
         return { message: 'User updated successfully' };
     }
