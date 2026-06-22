@@ -20,10 +20,32 @@ model User {
   adminOwnerId String? 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  items MenuItem[]
 }
 
 enum UserRole {
   ADMIN
   COOK
   CASHIER
+}
+
+model MenuItem {
+  id          String   @id @default(uuid())
+
+  adminOwnerId     String
+  user        User     @relation(fields: [adminOwnerId], references: [id])
+
+  name        String
+  description String?
+  price       Float
+  category    String
+  status      MenuItemStatus @default(AVAILABLE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum MenuItemStatus {
+  AVAILABLE
+  UNAVAILABLE
 }
