@@ -30,7 +30,6 @@ export default function AdminOrders() {
     const fetchOrders = async () => {
       try {
         const response = await api.get("/sales");
-        console.log("Fetched orders:", response.data);
         setOrders(response.data);
       } catch (error) {
         console.error("Error fetching orders:", error);
