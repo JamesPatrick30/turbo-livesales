@@ -108,10 +108,17 @@ export default function AdminAccounts() {
         // setIsModalOpen(false);
     };
 
-    const onDelete = (id: string) => {
-        // Handle delete logic here
-        console.log("Deleted account with id:", id);
+    const onDelete = async (id: string) => {
+        toast.info("Saving changes...");
         setIsModalOpen(false);
+        try {
+          const res = await api.delete(`/users/delete/${id}`);
+          toast.dismiss();
+          toast.success(res.data.message);
+          setAccounts((prev) => prev.filter((account) => account.id !== id));
+        } catch (error: any) {
+          toast.error(error.response.data.message);
+        }
     };
 
     // create user logic
