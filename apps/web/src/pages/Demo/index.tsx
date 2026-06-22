@@ -96,8 +96,8 @@ export default function Demo() {
   const navigate = useNavigate();
 
   const roleRoutes: Record<Role, string> = {
-    cashier: "/demo",
-    cook: "/demo",
+    cashier: "/demo/cashier",
+    cook: "/demo/cook",
     admin: "/demo/admin",
   };
 

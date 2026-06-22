@@ -8,6 +8,10 @@ import AdminDashboard from "../pages/AdminPages/AdminDashboard";
 import AdminOrders from "../pages/AdminPages/AdminOrders";
 import AdminMenu from "../pages/AdminPages/AdminMenu";
 import AdminAccounts from "../pages/AdminPages/AdminAccounts";
+
+// Cashier Pages
+import CashierDashboard from "../pages/CashierPages/CashierDashboard";
+// Add more imports as needed
 export default function AppRoutes() {
   return (
     <BrowserRouter>
@@ -18,6 +22,9 @@ export default function AppRoutes() {
         <Route path="/demo/admin/orders" element={<AdminOrders />} />
         <Route path="/demo/admin/menu" element={<AdminMenu />} />
         <Route path="/demo/admin/accounts" element={<AdminAccounts />} />
+
+        {/* Cashier Routes */}
+        <Route path="/demo/cashier" element={<CashierDashboard />} />
         {/* Add more routes as needed */}
       </Routes>
     </BrowserRouter>
