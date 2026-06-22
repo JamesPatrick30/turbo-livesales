@@ -18,8 +18,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: {id: string; role: string; email: string }) {
+  async validate(payload: {id: string; role: string; email: string; OwnerId: string }) {
     if (!payload) throw new UnauthorizedException();
-    return { id: payload.id, email: payload.email, role: payload.role };
+    return { id: payload.id, email: payload.email, role: payload.role, OwnerId: payload.role === 'ADMIN' ? payload.id : payload.OwnerId };
   }
 }

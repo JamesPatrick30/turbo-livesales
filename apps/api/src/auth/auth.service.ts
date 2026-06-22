@@ -64,8 +64,10 @@ export class AuthService {
             throw new NotFoundException('Invalid credentials');
         }
 
+        const OwnerId = user?.adminOwnerId;
+
         // Sign ONCE
-        const { accessToken, refreshToken } = this.HandleCreateToken({ id: user.id, email, role });
+        const { accessToken, refreshToken } = this.HandleCreateToken({ id: user.id, email, role, OwnerId });
 
         // Reuse the same tokens for cookies
         res.cookie('accessToken', accessToken, {
