@@ -24,7 +24,7 @@ export class CreateSaleDto {
   @IsEnum(['TAKEAWAY', 'DINE_IN','DELIVERY'])
   orderType!: string;
 
-  @IsEnum(['CASH', 'CARD','ONLINE'])
+  @IsEnum(['CASH', 'CARD','GOOGLE_PAY','GCASH',"MAYA","GOTYME"])
   paymentMethod!: string;
 
   @IsArray()

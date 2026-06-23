@@ -4,12 +4,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import { RealtimeService } from '../realtime/realtime.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSaleDto } from './dtos/create-sale.dto';
 
 @Injectable()
 export class SalesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtimeService: RealtimeService
+  ) {}
 
   private formatHour(hour: number): string {
     const period = hour >= 12 ? 'PM' : 'AM';
@@ -114,7 +118,7 @@ export class SalesService {
     if (!dto.items?.length) {
       throw new BadRequestException('Sale must contain at least one item.');
     }
-
+    // console.log('Creating sale with data:', { adminOwnerId, cashierId, dto });
     // 1) Validate cashier belongs to this admin and is really a cashier
     const cashier = await this.prisma.client.user.findFirst({
       where: {
@@ -249,6 +253,9 @@ export class SalesService {
       return createdSale;
     });
 
+    this.realtimeService.emit("newOrder", {sale}, adminOwnerId); // Emit to the specific admin's room
+    // this.realtimeService.emit("newOrder", {sale}); // Emit to the specific admin's room
+    
     return {
       message: 'Sale created successfully',
       data: sale,
@@ -284,6 +291,7 @@ export class SalesService {
           readyAt: new Date(),
         },
       });
+      this.realtimeService.emit("orderStatusUpdated", {id: updatedSale.id, orderstatus: updatedSale.orderstatus}, adminOwnerId); // Emit to the specific admin's room
 
       return {
         message: 'Order status updated to READY with timestamp.',
@@ -299,6 +307,7 @@ export class SalesService {
         orderstatus: newStatus,
       },
     });
+    this.realtimeService.emit("orderStatusUpdated", {id: updatedSale.id, orderstatus: updatedSale.orderstatus}, adminOwnerId); // Emit to the specific admin's room
 
     return {
       message: 'Order status updated successfully',
@@ -403,12 +412,26 @@ export class SalesService {
 
     if (!order) throw new NotFoundException('Order not found');
 
-    return this.prisma.client.sales.update({
+    const updatedSale = await this.prisma.client.sales.update({
       where: { id: orderId },
       data: {
         orderstatus: "PREPARING",
         readyAt: null, // clear readyAt so prep time resets
       },
     });
+    const sale = await this.prisma.client.sales.findUnique({
+      where: { id: orderId },
+      include: {
+        cashier: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          items: true,
+      },
+    });
+    this.realtimeService.emit("newOrder", {sale}, adminOwnerId); // Emit to the specific admin's room
+    return updatedSale;
   }
 }
