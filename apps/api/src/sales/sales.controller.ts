@@ -52,7 +52,6 @@ export class SalesController {
       @Req() req: Request,
       @Param('orderId') orderId: string
   ) {
-    console.log(`Received request to recall order with ID: ${orderId}`);
       const adminOwnerId = (req.user as any).OwnerId;
       return this.salesService.recallOrder(orderId,adminOwnerId);
   }
