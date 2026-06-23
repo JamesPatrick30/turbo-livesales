@@ -18,7 +18,7 @@ interface CartItem extends MenuItem {
 }
 
 type OrderType = "DINE_IN" | "TAKEAWAY" | "DELIVERY";
-type PaymentMethod = "CASH" | "CARD" | "ONLINE";
+type PaymentMethod = "CASH" | "CARD" | "GCASH";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -48,8 +48,8 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: React.ReactN
     ),
   },
   {
-    value: "ONLINE",
-    label: "Online",
+    value: "GCASH",
+    label: "GCash",
     icon: (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
@@ -133,6 +133,7 @@ export default function CashierDashboard() {
     if (cart.length === 0) { toast.warn("Cart is empty."); return; }
     setSubmitting(true);
     try {
+      console.log("Submitting order:", { orderType, paymentMethod, cart });
       const res = await api.post("/sales/create", {
         orderType,
         paymentMethod,

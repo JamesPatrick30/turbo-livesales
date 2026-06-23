@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import CookNav from "../../../shared/components/CookComponents/CookNav";
 import { toast } from "react-toastify";
+import {socket} from "../../../shared/lib/socket";
 
 import api from "../../../shared/lib/axios";
 
@@ -17,6 +18,29 @@ const ORDER_TYPE_STYLES: Record<string, string> = {
 export default function CookDashboard() {
     // const orderStatuses = ["PENDING", "PREPARING", "READY", "SERVED", "VOID"];
   const [orders, setOrders] = useState<OrderType[]>([]);
+
+  useEffect(() => {
+    // Listen for real-time updates to orders
+    socket.connect();
+
+    socket.on('newOrder', (data: any) => {
+      console.log('Received new order:', data.sale);
+      setOrders((prevOrders) => [...prevOrders, data.sale]);
+    });
+
+    socket.on('orderStatusUpdated', (data: any) => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === data.id ? { ...order, orderstatus: data.orderstatus } : order
+        ).filter(order => order.orderstatus !== "READY") // Auto-clear completed from screen
+      );
+    });
+
+    return () => {
+      socket.off('newOrder');
+      socket.off('orderStatusUpdated');
+    }
+  }, [socket]); // dependency array
 
   const handleFetchOrder = async () =>{
     try {

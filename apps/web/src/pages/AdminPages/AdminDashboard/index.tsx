@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import AdminNav from "../../../shared/components/AdminComponents/AdminNav";
 import api from "../../../shared/lib/axios";
 import { useEffect } from "react";
+import {socket} from "../../../shared/lib/socket";
 // ── Data ─────────────────────────────────────────────────────────────────────
 
 const METRICS = [
@@ -104,17 +105,52 @@ function TrendBadge({ trend, up }: { trend: string; up: boolean }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const response = await api.get("/auth/me");
-                console.log("Profile data:", response.data);
-            } catch (error) {
-                console.error("Error fetching profile:", error);
-            }
-        };
-        fetchProfile();
-    }, []);
+  
+  const handleSocketConnection = () => {
+    socket.connect();
+    socket.on('connect', () => {
+      console.log('WebSocket connection established');
+      console.log('Connected to WebSocket server with ID:', socket.id);
+    });
+    socket.on('disconnect', (err) => {
+      console.error('WebSocket connection error:', err);
+    });
+
+    socket.emit('getOrders', {}, (response: any) => {
+      console.log('Received response from getOrders:', response);
+    });
+
+    socket.on('newOrder', (data: any) => {
+      console.log('Received newOrder event:', data);
+    });
+  };
+
+ useEffect(() => {
+  let isMounted = true;
+
+  const fetchProfile = async () => {
+    try {
+      const response = await api.get("/auth/me");
+
+      if (isMounted) {
+        console.log("Profile data:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
+
+  fetchProfile();
+  handleSocketConnection();
+
+  return () => {
+    isMounted = false;
+
+    socket.off("connect");
+    socket.off("disconnect");
+    socket.off("newOrder");
+  };
+}, [socket]); // dependency array
   return (
     <div className="flex min-h-screen bg-[#0d0d0f] text-white">
       <AdminNav />
