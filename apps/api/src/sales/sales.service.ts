@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSaleDto } from './dtos/create-sale.dto';
 
@@ -10,6 +11,54 @@ import { CreateSaleDto } from './dtos/create-sale.dto';
 export class SalesService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private formatHour(hour: number): string {
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const h = hour % 12 === 0 ? 12 : hour % 12;
+    return `${h} ${period}`;
+  }
+  private async generateReceiptNo(adminOwnerId: string): Promise<string> {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+
+    const datePart = `${year}${month}${day}`;
+
+    const startOfDay = new Date(year, now.getMonth(), now.getDate(), 0, 0, 0);
+    const endOfDay = new Date(year, now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    const latestSale = await this.prisma.client.sales.findFirst({
+      where: {
+        adminOwnerId,
+        createdAt: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        receiptNo: true,
+      },
+    });
+
+    let nextSequence = 1;
+
+    if (latestSale?.receiptNo) {
+      const parts = latestSale.receiptNo.split('-');
+      const lastSequence = Number(parts[2]);
+
+      if (!Number.isNaN(lastSequence)) {
+        nextSequence = lastSequence + 1;
+      }
+    }
+
+    const sequencePart = String(nextSequence).padStart(4, '0');
+
+    return `LS-${datePart}-${sequencePart}`;
+  }
   async getSales(adminOwnerId: string) {
     // Implement the logic to get sales here
     const sales = await this.prisma.client.sales.findMany({
@@ -36,6 +85,31 @@ export class SalesService {
 
     return sales;
   }
+
+  async getOrders(id: string){
+    const orders = await this.prisma.client.sales.findMany({
+      where: {
+        adminOwnerId: id,
+      },
+      include: {
+        adminOwnerId: false,
+        cashierId: false,
+        cashier: false,
+        items: {
+          select: {
+            name: true,
+            quantity: true,
+            category: true
+          },
+        },
+        total: false,
+        paymentMethod: false
+      },
+    });
+
+    return orders;
+  }
+
   async createSale(adminOwnerId: string,cashierId: string, dto: CreateSaleDto) {
     if (!dto.items?.length) {
       throw new BadRequestException('Sale must contain at least one item.');
@@ -136,7 +210,7 @@ export class SalesService {
         name: menuItem.name,
         unitPrice, // Prisma can accept number for Decimal fields
         quantity,
-        cathegory: menuItem.category, // keep because your schema uses cathegory
+        category: menuItem.category, // keep because your schema uses category
         lineTotal,
       };
     });
@@ -150,6 +224,7 @@ export class SalesService {
           adminOwnerId,
           cashierId,
           paymentMethod: dto.paymentMethod,
+          receiptNo: await this.generateReceiptNo(adminOwnerId),
 
           // IMPORTANT: use the exact field names from your schema
           Ordertype: dto.orderType,
@@ -178,5 +253,162 @@ export class SalesService {
       message: 'Sale created successfully',
       data: sale,
     };
+  }
+
+  async updateOrderStatus(adminOwnerId: string, orderId: string, newStatus: string) {
+    const validStatuses = ['PENDING', 'PREPARING', 'READY', 'SERVED', 'VOID'];
+
+    if (!validStatuses.includes(newStatus)) {
+      throw new BadRequestException('Invalid order status.');
+    }
+
+    const sale = await this.prisma.client.sales.findUnique({
+      where: {
+        id: orderId,
+        adminOwnerId,
+      },
+    });
+
+    if (!sale) {
+      throw new NotFoundException('Sale not found.');
+    }
+
+    if (newStatus === 'READY' && !sale.readyAt) {
+      const updatedSale = await this.prisma.client.sales.update({
+        where: {
+          id: orderId,
+          adminOwnerId,
+        },
+        data: {
+          orderstatus: newStatus,
+          readyAt: new Date(),
+        },
+      });
+
+      return {
+        message: 'Order status updated to READY with timestamp.',
+        data: updatedSale,
+      };
+    }
+    const updatedSale = await this.prisma.client.sales.update({
+      where: {
+        id: orderId,
+        adminOwnerId,
+      },
+      data: {
+        orderstatus: newStatus,
+      },
+    });
+
+    return {
+      message: 'Order status updated successfully',
+      data: updatedSale,
+    };
+  }
+
+  async getHistory(adminOwnerId: string) {
+    const now = new Date();
+    const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const dayEnd   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    const orders = await this.prisma.client.sales.findMany({
+      where: {
+        adminOwnerId,
+        orderstatus: { in: ["READY", "SERVED"] },
+        createdAt: { gte: dayStart, lte: dayEnd },
+      },
+      include: {
+        items: {
+          select: {
+            name: true,
+            quantity: true,
+          },
+        },
+      },
+      orderBy: { readyAt: 'desc' },
+    });
+
+    // ── Stats Computation ──────────────────────────────────────────
+    const fulfilled = orders.length;
+
+    // Avg prep time in minutes (createdAt → readyAt)
+    const ordersWithReadyAt = orders.filter((o) => o.readyAt);
+    const avgPrepMinutes =
+      ordersWithReadyAt.length > 0
+        ? ordersWithReadyAt.reduce((sum, o) => {
+            const diff =
+              (o.readyAt!.getTime() - o.createdAt.getTime()) / 1000 / 60;
+            return sum + diff;
+          }, 0) / ordersWithReadyAt.length
+        : 0;
+
+    // Peak speed hour: group by hour of readyAt, find hour with most orders
+    const hourBuckets: Record<number, number> = {};
+    for (const o of ordersWithReadyAt) {
+      const hour = o.readyAt!.getHours();
+      hourBuckets[hour] = (hourBuckets[hour] ?? 0) + 1;
+    }
+    const peakHour =
+      Object.keys(hourBuckets).length > 0
+        ? Object.entries(hourBuckets).sort((a, b) => b[1] - a[1])[0][0]
+        : null;
+
+    const peakHourLabel = peakHour
+      ? this.formatHour(Number(peakHour))
+      : 'N/A';
+
+    // Avg prep time during peak hour
+    const peakHourOrders = ordersWithReadyAt.filter(
+      (o) => o.readyAt!.getHours() === Number(peakHour),
+    );
+    const peakAvgPrep =
+      peakHourOrders.length > 0
+        ? peakHourOrders.reduce((sum, o) => {
+            return (
+              sum +
+              (o.readyAt!.getTime() - o.createdAt.getTime()) / 1000 / 60
+            );
+          }, 0) / peakHourOrders.length
+        : 0;
+
+    return {
+      stats: {
+        fulfilled,
+        avgPrepMinutes: Math.round(avgPrepMinutes * 10) / 10,
+        peakHour: peakHourLabel,
+        peakAvgPrepMinutes: Math.round(peakAvgPrep * 10) / 10,
+      },
+      orders: orders.map((o) => ({
+        id: o.id,
+        receiptNo: o.receiptNo,
+        Ordertype: o.Ordertype,
+        orderstatus: o.orderstatus,
+        readyAt: o.readyAt,
+        createdAt: o.createdAt,
+        prepTime:
+          o.readyAt
+            ? `${Math.round(
+                (o.readyAt.getTime() - o.createdAt.getTime()) / 1000 / 60,
+              )} min`
+            : '—',
+        items: o.items,
+      })),
+    };
+  }
+
+  async recallOrder(orderId: string, adminOwnerId: string) {
+    const order = await this.prisma.client.sales.findFirst({
+      where: { id: orderId, adminOwnerId },
+    });
+
+    if (!order) throw new NotFoundException('Order not found');
+
+    return this.prisma.client.sales.update({
+      where: { id: orderId },
+      data: {
+        orderstatus: "PREPARING",
+        readyAt: null, // clear readyAt so prep time resets
+      },
+    });
   }
 }
