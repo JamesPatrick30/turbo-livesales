@@ -11,6 +11,11 @@ import AdminAccounts from "../pages/AdminPages/AdminAccounts";
 
 // Cashier Pages
 import CashierDashboard from "../pages/CashierPages/CashierDashboard";
+
+// Cook Pages
+import CookDashboard from "../pages/CookPages/CookDashboard";
+import CookHistory from "../pages/CookPages/CookHistory";
+
 // Add more imports as needed
 export default function AppRoutes() {
   return (
@@ -25,7 +30,10 @@ export default function AppRoutes() {
 
         {/* Cashier Routes */}
         <Route path="/demo/cashier" element={<CashierDashboard />} />
-        {/* Add more routes as needed */}
+
+        {/* Cook Routes */}
+        <Route path="/demo/cook" element={<CookDashboard />} />
+        <Route path="/demo/cook/history" element={<CookHistory />} />
       </Routes>
     </BrowserRouter>
   );
