@@ -56,7 +56,8 @@ enum MenuItemStatus {
 
 model Sales {
   id          String   @id @default(uuid())
-
+  receiptNo     String        @unique
+  
   adminOwnerId String
   cashierId    String
 
@@ -74,6 +75,8 @@ model Sales {
   Ordertype    OrderType
 
   total       Decimal @db.Decimal(10, 2)
+
+  readyAt     DateTime?
   createdAt   DateTime @default(now())
 }
 
@@ -112,12 +115,12 @@ model SaleItem{
   name        String
   unitPrice   Decimal @db.Decimal(10, 2)
   quantity    Int
-  cathegory    String
+  category    String
 
   lineTotal   Decimal @db.Decimal(10, 2)
   createdAt   DateTime @default(now())
 
   @@index([salesId])
   @@index([menuItemId])
-  @@index([cathegory])
+  @@index([category])
 }
