@@ -17,7 +17,7 @@ export class AuthService {
     constructor(private readonly jwtService: JwtService, private readonly prismaService: PrismaService) {}
 
     HandleCreateToken(data: any): { accessToken: string, refreshToken: string } {
-        const accessToken = this.jwtService.sign(data, { expiresIn: '1h' });
+        const accessToken = this.jwtService.sign(data, { expiresIn: '15m' });
         const refreshToken = this.jwtService.sign({ ...data, type: 'refresh' }, { expiresIn: '7d' });
         return { accessToken, refreshToken };
     }
@@ -80,12 +80,21 @@ export class AuthService {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
         });
-        console.log("the loging is successful");
         return { accessToken, refreshToken };
     }
 
-    HandleRefresh(res: Response): Promise<LoginResponse> {
-        // In a real application, you'd verify the refresh token and generate new tokens accordingly.
+    HandleRefresh(res: Response, user: { id: string; email: string; role: string; OwnerId?: string }): Promise<LoginResponse> {
+        const { accessToken, refreshToken } = this.HandleCreateToken({ id: user.id, email: user.email, role: user.role, OwnerId: user?.OwnerId });
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+        });
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+        });
         return Promise.resolve({ accessToken: '', refreshToken: '' });
     }
 

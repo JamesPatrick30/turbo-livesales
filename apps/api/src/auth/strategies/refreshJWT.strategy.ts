@@ -6,12 +6,12 @@ import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
   constructor(private config: ConfigService) {
     super({
       // Extract JWT from cookie instead of Authorization header
       jwtFromRequest: (req: Request) => {
-        return req?.cookies?.['accessToken'] ?? null;
+        return req?.cookies?.['refreshToken'] ?? null;
       },
       ignoreExpiration: false,
       secretOrKey: config.get<string>('JWT_SECRET'),
@@ -20,7 +20,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: {id: string; role: string; email: string; OwnerId: string }) {
     if (!payload) throw new UnauthorizedException();
-    // console.log('[JwtStrategy] validate payload:', payload);  
     return { id: payload.id, email: payload.email, role: payload.role, OwnerId: payload.role === 'ADMIN' ? payload.id : payload.OwnerId };
   }
 }

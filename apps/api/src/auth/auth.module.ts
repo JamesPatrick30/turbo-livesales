@@ -9,6 +9,8 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { AdminGuard } from './guards/admin.guard';
 import { AdminStrategy } from './strategies/admin.strategy';
 import { WsJwtGuard } from './guards/ws-jwt.guard'
+import { RefreshStrategy } from './strategies/refreshJWT.strategy';
+import { RefreshGuard } from './guards/refresh.guard';
 @Module({
   imports: [
     JwtModule.registerAsync({
@@ -23,7 +25,7 @@ import { WsJwtGuard } from './guards/ws-jwt.guard'
     PrismaModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, WsJwtGuard, JwtStrategy, AdminStrategy, JwtAuthGuard, AdminGuard],
+  providers: [AuthService, WsJwtGuard, JwtStrategy, AdminStrategy, JwtAuthGuard, AdminGuard, RefreshStrategy, RefreshGuard],
   exports: [AuthService, WsJwtGuard , JwtStrategy, AdminStrategy, JwtAuthGuard, AdminGuard, JwtModule],  // Export AuthService, JwtModule, and JwtAuthGuard for use in other modules
 })
 export class AuthModule {}

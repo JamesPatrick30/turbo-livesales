@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
 import type { Response, Request } from 'Express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-
+import { RefreshGuard } from './guards/refresh.guard';
 //dtos
 import { SignupDto, SignupResponseDto } from './dtos/signup.dto';
 @Controller('auth')
@@ -26,12 +26,13 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(RefreshGuard)
   refresh(
-    @Res({ passthrough: true }) res: Response  // ← and this
+    @Res({ passthrough: true }) res: Response,  // ← and this
+    @Req() req: Request
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    console.log('Refresh endpoint called');
-    return this.authService.HandleRefresh(res);
+    const user = req.user as { id: string; email: string; role: string, OwnerId?: string };
+    return this.authService.HandleRefresh(res,user);
   }
 
   @Post('logout')
