@@ -253,7 +253,7 @@ export default function AdminDashboard() {
           <button
             onClick={fetchDashboard}
             disabled={loading}
-            className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-white transition-colors px-3 py-1.5 rounded-lg border border-white/6 hover:border-white/10 bg-white/[0.02] hover:bg-white/[0.05] disabled:opacity-40"
+            className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-white transition-colors px-3 py-1.5 rounded-lg border border-white/6 hover:border-white/10 bg-white/2 hover:bg-white/5 disabled:opacity-40"
           >
             <svg
               className={`w-3 h-3 ${loading ? "animate-spin" : ""}`}
