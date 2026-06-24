@@ -133,7 +133,6 @@ export default function AdminCreateUserModal({
     setIsSubmitting(true);
     // TODO: replace with the real API call
     setTimeout(() => {
-      console.log("Creating user with data:", createUserData);
       setIsSubmitting(false);
       onSave(createUserData);
       handleClose();

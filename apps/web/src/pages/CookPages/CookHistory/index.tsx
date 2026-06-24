@@ -24,7 +24,6 @@ export default function CookHistory() {
     const handleFetchHistory = async () => {
         try {
             const response = await api.get('/sales/history');
-            console.log('Fetched history:', response.data);
             setCompletedOrders(response.data.orders);
             // Update stats based on fetched data
             setStats([
@@ -43,15 +42,13 @@ export default function CookHistory() {
   // Recall button pushes order back out of history (back onto the active KDS board)
     const handleRecallOrder =async (orderId: string) => {
         try{
-            const response = await api.patch(`/sales/${orderId}/recall`);
-            console.log(`Recalled order #${orderId}:`, response.data);
+            await api.patch(`/sales/${orderId}/recall`);
             setCompletedOrders(prev => prev.filter(order => order.id !== orderId));
 
         } catch (error) {
         console.error(`Failed to recall order #${orderId}:`, error);
         return;
         }
-        // console.log(`Recalled order #${orderId} back to active kitchen board.`);
     };
 
     const handleReadyOrderTime = (readyAt: string) => {

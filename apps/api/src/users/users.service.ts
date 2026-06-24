@@ -90,8 +90,7 @@ export class UsersService {
     }
 
     async updateUser(userId: string, dto: UpdateUserRequestDto, adminOwnerId: string): Promise<{ message: string }> {
-        console.log("Updating user with ID:", userId);
-        console.log("Update data:", dto);
+
         const user = await this.prisma.client.user.findFirst({
             where: {
                 id: userId,

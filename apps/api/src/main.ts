@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 async function bootstrap() {
-  // console.log(`Secret Key: ${process.env.JWT_SECRET}`); // Log the secret key to verify it's loaded
   const app = await NestFactory.create(AppModule);
   
   app.use(cookieParser());

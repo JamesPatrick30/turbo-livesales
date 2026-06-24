@@ -17,7 +17,6 @@ export class ItemsService {
     }
 
     async createItem(createDto: CreateItemDto, adminOwnerId: string): Promise<CreateItemResponse> {
-        console.log('Creating item with data:', createDto, 'for adminOwnerId:', adminOwnerId);
         const newItem = await this.prisma.client.menuItem.create({
             data: {
                 adminOwnerId,

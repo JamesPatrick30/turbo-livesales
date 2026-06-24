@@ -56,7 +56,6 @@ export default function AdminMenu() {
 
     const HandleSaveNewItem = async (data: CreateMenuItemDto) => {
         // In real app, call API to save new item, then refresh list
-        console.log("Saving new item:", data);
         try{
           const response = await api.post("/items/add", data);
           toast.success(response.data.message || "Item created successfully");

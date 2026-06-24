@@ -32,10 +32,8 @@ export class RealtimeGateway implements OnGatewayConnection {
 
     try {
       const cookieHeader = client.handshake.headers.cookie;
-      // console.log('[WS] cookie header:', cookieHeader);
 
       if (!cookieHeader) {
-        // console.log('[WS] No cookie header found');
         client.emit('error', 'Unauthorized');
         client.disconnect();
         return;
@@ -45,7 +43,6 @@ export class RealtimeGateway implements OnGatewayConnection {
       const token = cookies.accessToken;
 
       if (!token) {
-        // console.log('[WS] No accessToken found');
         client.emit('error', 'Unauthorized');
         client.disconnect();
         return;
@@ -68,26 +65,9 @@ export class RealtimeGateway implements OnGatewayConnection {
       };
 
       client.join(payload.OwnerId || payload.id); // Join a room based on OwnerId or user id
-    //   console.log('[WS] Authenticated user:', client.data.user);
     } catch (err: any) {
-    //   console.log('[WS] Token verification failed:', err.message);
       client.emit('error', 'Unauthorized');
       client.disconnect();
     }
-  }
-
-  @SubscribeMessage('getOrders')
-  async handleGetOrders(@ConnectedSocket() client: Socket) {
-    const user = client.data.user;
-
-    if (!user) {
-      return { message: 'Unauthorized' };
-    }
-
-    const { OwnerId, id, role } = user;
-    // //console.log(`User ${id} (${role}) requesting orders for OwnerId ${OwnerId}`);
-
-    // return this.realtimeService.getOrders(OwnerId);
-    return { message: 'Orders fetched successfully' };
   }
 }

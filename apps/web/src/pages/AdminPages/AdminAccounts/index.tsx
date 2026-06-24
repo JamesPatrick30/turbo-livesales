@@ -41,7 +41,7 @@ export default function AdminAccounts() {
         });
         setAccounts(fixedAccounts);
       }catch(err){
-        console.log(err);
+        toast.error("Failed to fetch accounts");
       }
     }
 
@@ -103,8 +103,7 @@ export default function AdminAccounts() {
           toast.dismiss();
           toast.error(err.response?.data?.message || "Failed to update account");
         }
-        // console.log("Saved data:", data);
-        // setIsModalOpen(false);
+
     };
 
     const onDelete = async (id: string) => {

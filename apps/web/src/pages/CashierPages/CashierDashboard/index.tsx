@@ -133,7 +133,6 @@ export default function CashierDashboard() {
     if (cart.length === 0) { toast.warn("Cart is empty."); return; }
     setSubmitting(true);
     try {
-      console.log("Submitting order:", { orderType, paymentMethod, cart });
       const res = await api.post("/sales/create", {
         orderType,
         paymentMethod,

@@ -24,7 +24,6 @@ export default function CookDashboard() {
     socket.connect();
 
     socket.on('newOrder', (data: any) => {
-      console.log('Received new order:', data.sale);
       setOrders((prevOrders) => [...prevOrders, data.sale]);
     });
 

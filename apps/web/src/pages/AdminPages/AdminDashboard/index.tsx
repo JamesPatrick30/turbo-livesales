@@ -114,7 +114,6 @@ export default function AdminDashboard() {
       setHourlySales(hourlyRes.data);
       setTopItems(topRes.data);
       setActiveOrders(ordersRes.data);
-      console.log(ordersRes.data);
     } catch (err) {
       console.error("Dashboard fetch error:", err);
       setError("Failed to load dashboard data.");
@@ -129,14 +128,6 @@ export default function AdminDashboard() {
     fetchDashboard();
 
     socket.connect();
-
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.warn("Socket disconnected:", reason);
-    });
 
     // New order arrives - unwrap { sale } and map to ActiveOrder shape
     socket.on("newOrder", (payload: any) => {
@@ -161,11 +152,8 @@ export default function AdminDashboard() {
     });
 
     socket.on("orderStatusUpdated", (payload: any) => {
-      console.log("Order status updated:", payload);
       const { id, orderstatus } = payload;
-      // const getdataArray = activeOrders.filter((order) => order.id === id);
-      // console.log("Updated activeOrders array:", getdataArray);
-      console.log("data:", activeOrders);
+
       setActiveOrders((prev) =>
         prev.map((order) => (order.id === id ? { ...order, status: orderstatus.toLowerCase() } : order))
       );
@@ -173,8 +161,7 @@ export default function AdminDashboard() {
     });
 
     return () => {
-      socket.off("connect");
-      socket.off("disconnect");
+
       socket.off("newOrder");
       socket.off("orderStatusUpdated");
       socket.disconnect();

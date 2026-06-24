@@ -118,7 +118,6 @@ export class SalesService {
     if (!dto.items?.length) {
       throw new BadRequestException('Sale must contain at least one item.');
     }
-    // console.log('Creating sale with data:', { adminOwnerId, cashierId, dto });
     // 1) Validate cashier belongs to this admin and is really a cashier
     const cashier = await this.prisma.client.user.findFirst({
       where: {
