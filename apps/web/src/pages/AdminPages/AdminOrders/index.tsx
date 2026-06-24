@@ -77,9 +77,9 @@ export default function AdminOrders() {
           </div>
 
           {/* Table */}
-          <div className="bg-white/3 border border-white/5 rounded-xl overflow-hidden">
+          <div className="overflow-auto max-h-150 custom-scroll">
             <table className="w-full">
-              <thead>
+              <thead className="sticky top-0 z-10 bg-[#0d0d0f]">
                 <tr className="border-b border-white/5">
                   <th className="text-left px-5 py-3 text-xs text-neutral-600 font-medium">Order Type</th>
                   <th className="text-left px-5 py-3 text-xs text-neutral-600 font-medium">Cashier</th>
