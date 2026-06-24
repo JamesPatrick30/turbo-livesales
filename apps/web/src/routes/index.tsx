@@ -11,7 +11,8 @@ import AdminAccounts from "../pages/AdminPages/AdminAccounts";
 
 // Cashier Pages
 import CashierDashboard from "../pages/CashierPages/CashierDashboard";
-
+import CashierOrders from "../pages/CashierPages/CashierOrders";
+import CashierHistory from "../pages/CashierPages/CashierHistory";
 // Cook Pages
 import CookDashboard from "../pages/CookPages/CookDashboard";
 import CookHistory from "../pages/CookPages/CookHistory";
@@ -30,7 +31,8 @@ export default function AppRoutes() {
 
         {/* Cashier Routes */}
         <Route path="/demo/cashier" element={<CashierDashboard />} />
-
+        <Route path="/demo/cashier/orders" element={<CashierOrders />} />
+        <Route path="/demo/cashier/history" element={<CashierHistory />} />
         {/* Cook Routes */}
         <Route path="/demo/cook" element={<CookDashboard />} />
         <Route path="/demo/cook/history" element={<CookHistory />} />
