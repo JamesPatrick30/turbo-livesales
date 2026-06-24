@@ -47,6 +47,12 @@ export class SalesController {
     return this.salesService.getHistory(adminOwnerId);
   }
 
+  @Get('history/cashier')
+  async getHistorycashier(@Req() req: Request) {
+    const adminOwnerId = (req.user as any).OwnerId || (req.user as any).id; // Admins can view their own history, cashiers view their owner's history
+    return this.salesService.cashierHistory(adminOwnerId);
+  }
+
   @Patch(':orderId/recall')
   async recallOrder(
       @Req() req: Request,
@@ -54,5 +60,11 @@ export class SalesController {
   ) {
       const adminOwnerId = (req.user as any).OwnerId;
       return this.salesService.recallOrder(orderId,adminOwnerId);
+  }
+
+  @Get('active-orders')
+  async getActiveOrders(@Req() req: Request) {
+    const adminOwnerId = (req.user as any).OwnerId;
+    return this.salesService.getActiveOrders(adminOwnerId);
   }
 }

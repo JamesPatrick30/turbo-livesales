@@ -404,6 +404,98 @@ export class SalesService {
     };
   }
 
+  async cashierHistory(adminOwnerId: string) {
+    const now = new Date();
+    const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const dayEnd   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    const orders = await this.prisma.client.sales.findMany({
+      where: {
+        adminOwnerId,
+        orderstatus: { in: ["READY", "SERVED"] },
+        createdAt: { gte: dayStart, lte: dayEnd },
+      },
+      include: {
+        items: {
+          select: {
+            id: true,
+            name: true,
+            quantity: true,
+          },
+        },
+      },
+      orderBy: { readyAt: 'desc' },
+    });
+
+      
+    // ── Stats Computation ──────────────────────────────────────────
+    const fulfilled = orders.length;
+
+    // Avg prep time in minutes (createdAt → readyAt)
+    const ordersWithReadyAt = orders.filter((o) => o.readyAt);
+    const avgPrepMinutes =
+      ordersWithReadyAt.length > 0
+        ? ordersWithReadyAt.reduce((sum, o) => {
+            const diff =
+              (o.readyAt!.getTime() - o.createdAt.getTime()) / 1000 / 60;
+            return sum + diff;
+          }, 0) / ordersWithReadyAt.length
+        : 0;
+
+    // Peak speed hour: group by hour of readyAt, find hour with most orders
+    const hourBuckets: Record<number, number> = {};
+    for (const o of ordersWithReadyAt) {
+      const hour = o.readyAt!.getHours();
+      hourBuckets[hour] = (hourBuckets[hour] ?? 0) + 1;
+    }
+    const peakHour =
+      Object.keys(hourBuckets).length > 0
+        ? Object.entries(hourBuckets).sort((a, b) => b[1] - a[1])[0][0]
+        : null;
+
+    const peakHourLabel = peakHour
+      ? this.formatHour(Number(peakHour))
+      : 'N/A';
+
+    // Avg prep time during peak hour
+    const peakHourOrders = ordersWithReadyAt.filter(
+      (o) => o.readyAt!.getHours() === Number(peakHour),
+    );
+    const peakAvgPrep =
+      peakHourOrders.length > 0
+        ? peakHourOrders.reduce((sum, o) => {
+            return (
+              sum +
+              (o.readyAt!.getTime() - o.createdAt.getTime()) / 1000 / 60
+            );
+          }, 0) / peakHourOrders.length
+        : 0;
+
+    return {
+      stats: {
+        fulfilled,
+        avgPrepMinutes: Math.round(avgPrepMinutes * 10) / 10,
+        peakHour: peakHourLabel,
+        peakAvgPrepMinutes: Math.round(peakAvgPrep * 10) / 10,
+      },
+      orders: orders.map((o) => ({
+        id: o.id,
+        receiptNo: o.receiptNo,
+        total: o.total.toNumber(),
+        Ordertype: o.Ordertype,
+        orderstatus: o.orderstatus,
+        readyAt: o.readyAt,
+        createdAt: o.createdAt,
+        prepTime:
+          o.readyAt
+            ? `${Math.round(
+                (o.readyAt.getTime() - o.createdAt.getTime()) / 1000 / 60,
+              )} min`
+            : '—',
+        items: o.items,
+      })),
+    };
+  }
   async recallOrder(orderId: string, adminOwnerId: string) {
     const order = await this.prisma.client.sales.findFirst({
       where: { id: orderId, adminOwnerId },
@@ -432,5 +524,30 @@ export class SalesService {
     });
     this.realtimeService.emit("newOrder", {sale}, adminOwnerId); // Emit to the specific admin's room
     return updatedSale;
+  }
+
+  async getActiveOrders(adminOwnerId: string) {
+    return this.prisma.client.sales.findMany({
+      where: {
+        adminOwnerId,
+        orderstatus: { in: ["PENDING", "PREPARING", "READY"] },
+      },
+      select:{
+        id:true,
+        receiptNo: true,
+        Ordertype: true,
+        orderstatus:true,
+        total: true,
+        createdAt:true,
+        items: {
+          select: {
+            id:true,
+            name: true,
+            quantity: true,
+            unitPrice: true,
+          },
+        }
+      }
+    });
   }
 }
