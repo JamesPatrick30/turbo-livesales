@@ -1,5 +1,5 @@
 import AppRoutes from "./routes";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import api from "./shared/lib/axios";
 import { useEffect, useState } from "react";
 import WakingUpScreen from "./shared/components/Wakingupscreen";
@@ -11,7 +11,7 @@ function App() {
         await api.get("/health");
         setBackendReady(true);
       } catch (error) {
-        console.error("Error waking up the server:", error);
+        toast.error("Backend is not ready. Please try again later.");
       }
     };
     wakeupServer();

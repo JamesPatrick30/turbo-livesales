@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import CashierNav from "../../../shared/components/CashierComponents/CashierNav";
 import api from "../../../shared/lib/axios";
-
+import { toast } from "react-toastify";
 type OrderStatus = "PENDING" | "PREPARING" | "READY" | "SERVED" | "CANCELLED";
 type OrderType = "DINE_IN" | "TAKEOUT" | "TAKEAWAY";
 
@@ -261,9 +261,8 @@ export default function CashierHistory() {
     try {
         const fetch = await api.get('/sales/history/cashier');
         setOrders(fetch.data.orders);
-        // console.log(fetch.data.orders);
     } catch (error) {
-        console.log(error);
+        toast.error("Failed to fetch order history. Please try again later.");
     } finally {
         setLoading(false);
     }

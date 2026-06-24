@@ -4,7 +4,6 @@ import api from '../../../shared/lib/axios';
 import {socket} from '../../../shared/lib/socket';
 type OrderStatus = "PENDING" | "PREPARING" | "READY" | "SERVED" | "CANCELLED";
 type OrderType = "DINE_IN" | "TAKEOUT";
-
 interface SaleItem {
   id: string;
   name: string;
@@ -283,7 +282,6 @@ export default function CashierOrders() {
         showToast(`${order?.receiptNo} marked as served`);
         } catch (err){
         showToast("Failed to update order");
-        console.log(err); 
         } finally {
         setServingId(null);
         }
@@ -294,7 +292,7 @@ export default function CashierOrders() {
             const orders = await api.get('/sales/active-orders');
             setOrders(orders.data);
         } catch (error) {
-            console.log(error);
+            showToast("Failed to fetch active orders. Please try again later.");
         }
     };
 

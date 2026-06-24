@@ -99,7 +99,6 @@ export default function AdminAccounts() {
             )
           );
         }catch(err: any){
-            // console.error("Error updating account:", err.response?.data || err.message);
           toast.dismiss();
           toast.error(err.response?.data?.message || "Failed to update account");
         }
