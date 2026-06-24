@@ -8,8 +8,9 @@ import { UsersModule } from './users/users.module';
 import { ItemsModule } from './items/items.module';
 import { SalesModule } from './sales/sales.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 @Module({
-  imports: [AuthModule, ConfigModule.forRoot({ isGlobal: true }), PrismaModule, UsersModule, ItemsModule, SalesModule, RealtimeModule], // Load .env and make it globally available
+  imports: [AuthModule, ConfigModule.forRoot({ isGlobal: true }), PrismaModule, UsersModule, ItemsModule, SalesModule, RealtimeModule, DashboardModule], // Load .env and make it globally available
   controllers: [AppController],
   providers: [AppService],
 })
