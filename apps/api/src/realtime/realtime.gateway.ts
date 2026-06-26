@@ -14,7 +14,7 @@ import * as cookie from 'cookie';
 
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:5173', // change to your frontend URL
+    origin: process.env.FRONTEND_URL, // change to your frontend URL
     credentials: true,
   },
 })
