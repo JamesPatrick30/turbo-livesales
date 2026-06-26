@@ -7,7 +7,7 @@
         "index.ts"
     ],
     "scripts": {
-        "build": "tsc --declaration --emitDeclarationOnly --outDir dist",
+        "build": "echo \"No build required\"",
         "clean": "rm -rf dist"
     },
     "devDependencies": {
