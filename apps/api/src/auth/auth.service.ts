@@ -77,7 +77,7 @@ export class AuthService {
         });
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: true,
             sameSite: 'none',
         });
         return { accessToken, refreshToken };
@@ -87,12 +87,12 @@ export class AuthService {
         const { accessToken, refreshToken } = this.HandleCreateToken({ id: user.id, email: user.email, role: user.role, OwnerId: user?.OwnerId });
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: true,
             sameSite: 'none',
         });
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: true,
             sameSite: 'none',
         });
         return Promise.resolve({ accessToken: '', refreshToken: '' });
