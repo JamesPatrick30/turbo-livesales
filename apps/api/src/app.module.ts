@@ -9,9 +9,21 @@ import { ItemsModule } from './items/items.module';
 import { SalesModule } from './sales/sales.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { DemoModule } from './demo/demo.module';
+
+import { DemoModeGuard } from './demo/demo-mode.guard';
+import { DemoModeInterceptor } from './demo/demo-mode.interceptor';
+import demoConfig from './config/demo.config';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core/constants';
+
 @Module({
-  imports: [AuthModule, ConfigModule.forRoot({ isGlobal: true }), PrismaModule, UsersModule, ItemsModule, SalesModule, RealtimeModule, DashboardModule], // Load .env and make it globally available
+  imports: [AuthModule, ConfigModule.forRoot({ load: [demoConfig], isGlobal: true }), PrismaModule, UsersModule, ItemsModule, SalesModule, RealtimeModule, DashboardModule, DemoModule], // Load .env and make it globally available
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {provide: APP_GUARD, useClass: DemoModeGuard },       // runs on every route
+    { provide: APP_INTERCEPTOR, useClass: DemoModeInterceptor }
+  ],
 })
+
 export class AppModule {}

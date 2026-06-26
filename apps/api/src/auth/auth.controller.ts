@@ -4,12 +4,18 @@ import { LoginDto } from './dtos/login.dto';
 import type { Response, Request } from 'Express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshGuard } from './guards/refresh.guard';
+
+// demo
+import { DemoAllowed } from '../demo/demo-allowed.decorator';
+
 //dtos
 import { SignupDto, SignupResponseDto } from './dtos/signup.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
   @Post('login')
+  @DemoAllowed()  // Mark this endpoint as allowed to mutate data even in demo mode
   login(
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response  // ← add this
@@ -26,6 +32,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @DemoAllowed()  // Mark this endpoint as allowed to mutate data even in demo mode
   @UseGuards(RefreshGuard)
   refresh(
     @Res({ passthrough: true }) res: Response,  // ← and this
@@ -36,6 +43,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @DemoAllowed()  // Mark this endpoint as allowed to mutate data even in demo mode
   @UseGuards(JwtAuthGuard)
   logout(
     @Res({ passthrough: true }) res: Response  // ← and this
