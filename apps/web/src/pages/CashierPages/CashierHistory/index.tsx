@@ -261,6 +261,7 @@ export default function CashierHistory() {
     try {
         const fetch = await api.get('/sales/history/cashier');
         setOrders(fetch.data.orders);
+        console.log(fetch.data.orders);
     } catch (error) {
         toast.error("Failed to fetch order history. Please try again later.");
     } finally {

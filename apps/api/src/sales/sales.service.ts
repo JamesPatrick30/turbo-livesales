@@ -421,6 +421,7 @@ export class SalesService {
             id: true,
             name: true,
             quantity: true,
+            unitPrice: true,
           },
         },
       },

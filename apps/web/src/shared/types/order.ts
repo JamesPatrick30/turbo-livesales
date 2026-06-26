@@ -23,6 +23,8 @@ export interface OrderHistory{
     items: {
       name: string;
       quantity: number;
+      unitPrice: number;
+      category: string;
     }[];
     prepTime: string;
 }
