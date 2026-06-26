@@ -3,6 +3,11 @@ import api from "../../../shared/lib/axios";
 import CashierNav from "../../../shared/components/CashierComponents/CashierNav";
 import { toast } from "react-toastify";
 
+// ── Tour ──────────────────────────────────────────────────────────────────────
+import { useTour } from "../../../shared/lib/useTour";
+import { TourButton } from "../../../shared/components/TourButton";
+import { cashierDashboardSteps } from "../../../shared/lib/tours/cashierDashboardTour";
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface MenuItem {
@@ -61,15 +66,22 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: React.ReactN
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function CashierDashboard() {
-  const [menuItems, setMenuItems]       = useState<MenuItem[]>([]);
-  const [categories, setCategories]     = useState<string[]>([]);
+  const [menuItems, setMenuItems]           = useState<MenuItem[]>([]);
+  const [categories, setCategories]         = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
-  const [searchQuery, setSearchQuery]   = useState("");
-  const [cart, setCart]                 = useState<CartItem[]>([]);
-  const [orderType, setOrderType]       = useState<OrderType>("TAKEAWAY");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
-  const [submitting, setSubmitting]     = useState(false);
-  const [loading, setLoading]           = useState(true);
+  const [searchQuery, setSearchQuery]       = useState("");
+  const [cart, setCart]                     = useState<CartItem[]>([]);
+  const [orderType, setOrderType]           = useState<OrderType>("TAKEAWAY");
+  const [paymentMethod, setPaymentMethod]   = useState<PaymentMethod>("CASH");
+  const [submitting, setSubmitting]         = useState(false);
+  const [loading, setLoading]               = useState(true);
+
+  // ── Tour ────────────────────────────────────────────────────────────────────
+  const { startTour } = useTour({
+    tourKey: "cashier_dashboard",
+    steps: cashierDashboardSteps,
+    delay: 700,
+  });
 
   // ── Fetch menu ──────────────────────────────────────────────────────────────
 
@@ -89,7 +101,7 @@ export default function CashierDashboard() {
     })();
   }, []);
 
-  // ── Derived filtered list (no stale-closure bug) ────────────────────────────
+  // ── Derived filtered list ────────────────────────────────────────────────────
 
   const filteredItems = useMemo(() => {
     return menuItems.filter((item) => {
@@ -153,7 +165,7 @@ export default function CashierDashboard() {
     <div className="flex min-h-screen bg-[#0d0d0f] text-white overflow-hidden">
       <CashierNav />
 
-      {/* ── Center: Menu Selection ───────────────────────────────────────────── */}
+      {/* ── Center: Menu Selection ─────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col min-w-0 border-r border-white/5">
 
         {/* Header */}
@@ -162,35 +174,46 @@ export default function CashierDashboard() {
             <h1 className="text-base font-semibold tracking-tight">New Order</h1>
             <p className="text-xs text-neutral-500 mt-0.5">Select items to add to ticket</p>
           </div>
-          <div className="relative">
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none"
-              width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search menu..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-white/5 border border-white/8 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amber-500/40 w-56 transition-colors"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-300 transition-colors"
+
+          {/* Right: tour button + search */}
+          <div className="flex items-center gap-2">
+            {/* Tour re-trigger */}
+            <TourButton onClick={startTour} />
+
+            {/* Search input — step 2 */}
+            <div data-tour="cashier-search" className="relative">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none"
+                width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            )}
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search menu..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-white/5 border border-white/8 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amber-500/40 w-56 transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-300 transition-colors"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Category Pills */}
-        <div className="px-6 py-3 border-b border-white/5 flex gap-2 overflow-x-auto no-scrollbar">
+        {/* Category pills — step 1 */}
+        <div
+          data-tour="cashier-categories"
+          className="px-6 py-3 border-b border-white/5 flex gap-2 overflow-x-auto no-scrollbar"
+        >
           {categories.map((cat) => (
             <button
               key={cat}
@@ -206,8 +229,8 @@ export default function CashierDashboard() {
           ))}
         </div>
 
-        {/* Menu Grid */}
-        <div className="flex-1 p-6 overflow-y-auto">
+        {/* Menu grid — step 3 */}
+        <div data-tour="cashier-menu-grid" className="flex-1 p-6 overflow-y-auto">
           {loading ? (
             <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               {[...Array(10)].map((_, i) => (
@@ -231,7 +254,7 @@ export default function CashierDashboard() {
           ) : (
             <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               {filteredItems.map((item) => {
-                const inCart = cart.find((c) => c.id === item.id);
+                const inCart    = cart.find((c) => c.id === item.id);
                 const unavailable = item.status === "UNAVAILABLE";
                 return (
                   <button
@@ -246,7 +269,6 @@ export default function CashierDashboard() {
                         : "bg-white/3 border-white/6 hover:border-amber-500/35 hover:bg-white/5 active:scale-95"
                     }`}
                   >
-                    {/* In-cart badge */}
                     {inCart && !unavailable && (
                       <span className="absolute top-2 right-2 w-5 h-5 bg-amber-500 text-[#0d0d0f] rounded-full text-[10px] font-extrabold flex items-center justify-center tabular-nums">
                         {inCart.quantity}
@@ -267,10 +289,10 @@ export default function CashierDashboard() {
         </div>
       </main>
 
-      {/* ── Right Sidebar: Ticket ────────────────────────────────────────────── */}
+      {/* ── Right Sidebar: Ticket ──────────────────────────────────────────── */}
       <aside className="w-[320px] bg-[#0d0d0f] flex flex-col shrink-0">
 
-        {/* Ticket Header */}
+        {/* Ticket header */}
         <div className="px-5 py-5 border-b border-white/5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold tracking-tight">
@@ -291,8 +313,8 @@ export default function CashierDashboard() {
             )}
           </div>
 
-          {/* Order Type */}
-          <div className="flex bg-white/4 rounded-lg p-1 gap-0.5">
+          {/* Order type switcher — step 4 */}
+          <div data-tour="cashier-order-type" className="flex bg-white/4 rounded-lg p-1 gap-0.5">
             {ORDER_TYPES.map(({ value, label }) => (
               <button
                 key={value}
@@ -309,8 +331,8 @@ export default function CashierDashboard() {
           </div>
         </div>
 
-        {/* Cart Items */}
-        <div className="flex-1 px-5 py-4 overflow-y-auto">
+        {/* Cart items — step 5 */}
+        <div data-tour="cashier-cart" className="flex-1 px-5 py-4 overflow-y-auto">
           {cart.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center gap-2 text-center">
               <div className="w-10 h-10 rounded-xl bg-white/3 border border-white/5 flex items-center justify-center">
@@ -338,7 +360,6 @@ export default function CashierDashboard() {
                     </button>
                   </div>
                   <div className="flex items-center justify-between">
-                    {/* Qty Controls */}
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => updateQty(item.id, -1)}
@@ -364,7 +385,7 @@ export default function CashierDashboard() {
           )}
         </div>
 
-        {/* Totals + Payment + Submit */}
+        {/* Totals + payment + submit */}
         <div className="px-5 pb-5 pt-4 border-t border-white/5 bg-[#0f0f12] space-y-4">
 
           {/* Breakdown */}
@@ -383,8 +404,8 @@ export default function CashierDashboard() {
             </div>
           </div>
 
-          {/* Payment Method */}
-          <div>
+          {/* Payment method — step 6 */}
+          <div data-tour="cashier-payment">
             <p className="text-[10px] uppercase tracking-widest text-neutral-600 font-semibold mb-2">Payment method</p>
             <div className="grid grid-cols-3 gap-1.5">
               {PAYMENT_METHODS.map(({ value, label, icon }) => (
@@ -404,8 +425,9 @@ export default function CashierDashboard() {
             </div>
           </div>
 
-          {/* Submit */}
+          {/* Submit — step 7 */}
           <button
+            data-tour="cashier-submit"
             onClick={handleSubmit}
             disabled={submitting || cart.length === 0}
             className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-white/5 disabled:text-neutral-700 disabled:cursor-not-allowed text-[#0d0d0f] font-bold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 tracking-wide uppercase active:scale-95"

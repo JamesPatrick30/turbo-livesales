@@ -4,6 +4,11 @@ import api from "../../../shared/lib/axios";
 import { useEffect, useState, useCallback } from "react";
 import { socket } from "../../../shared/lib/socket";
 
+// ── Tour ──────────────────────────────────────────────────────────────────────
+import { useTour } from "../../../shared/lib/useTour";
+import { TourButton } from "../../../shared/components/TourButton";
+import { adminDashboardSteps } from "../../../shared/lib/tours/adminDashboardTour";
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Metrics {
@@ -99,6 +104,13 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // ── Tour ────────────────────────────────────────────────────────────────────
+  const { startTour } = useTour({
+    tourKey: "admin_dashboard",
+    steps: adminDashboardSteps,
+    delay: 800, // give the API data time to render before spotlighting
+  });
+
   // ── Data fetching ──────────────────────────────────────────────────────────
 
   const fetchDashboard = useCallback(async () => {
@@ -129,7 +141,6 @@ export default function AdminDashboard() {
 
     socket.connect();
 
-    // New order arrives - unwrap { sale } and map to ActiveOrder shape
     socket.on("newOrder", (payload: any) => {
       const sale = payload?.sale ?? payload;
       const mapped: ActiveOrder = {
@@ -153,15 +164,12 @@ export default function AdminDashboard() {
 
     socket.on("orderStatusUpdated", (payload: any) => {
       const { id, orderstatus } = payload;
-
       setActiveOrders((prev) =>
         prev.map((order) => (order.id === id ? { ...order, status: orderstatus.toLowerCase() } : order))
       );
-      
     });
 
     return () => {
-
       socket.off("newOrder");
       socket.off("orderStatusUpdated");
       socket.disconnect();
@@ -246,26 +254,37 @@ export default function AdminDashboard() {
 
         {/* ── Header ── */}
         <div className="px-8 py-5 border-b border-white/5 flex items-center justify-between">
-          <div>
-            <h1 className="text-base font-semibold tracking-tight text-white">Dashboard</h1>
-            <p className="text-xs text-neutral-500 mt-0.5">{today}</p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-base font-semibold tracking-tight text-white">Dashboard</h1>
+              <p className="text-xs text-neutral-500 mt-0.5">{today}</p>
+            </div>
           </div>
-          <button
-            onClick={fetchDashboard}
-            disabled={loading}
-            className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-white transition-colors px-3 py-1.5 rounded-lg border border-white/6 hover:border-white/10 bg-white/2 hover:bg-white/5 disabled:opacity-40"
-          >
-            <svg
-              className={`w-3 h-3 ${loading ? "animate-spin" : ""}`}
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+
+          {/* Right side: tour button + refresh */}
+          <div className="flex items-center gap-2">
+            {/* ① Tour re-trigger button */}
+            <TourButton onClick={startTour} />
+
+            {/* ② Refresh — data-tour target for step 1 */}
+            <button
+              data-tour="admin-refresh"
+              onClick={fetchDashboard}
+              disabled={loading}
+              className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-white transition-colors px-3 py-1.5 rounded-lg border border-white/6 hover:border-white/10 bg-white/2 hover:bg-white/5 disabled:opacity-40"
             >
-              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-              <path d="M21 3v5h-5"/>
-              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-              <path d="M8 16H3v5"/>
-            </svg>
-            Refresh
-          </button>
+              <svg
+                className={`w-3 h-3 ${loading ? "animate-spin" : ""}`}
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              >
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M8 16H3v5"/>
+              </svg>
+              Refresh
+            </button>
+          </div>
         </div>
 
         {/* ── Error banner ── */}
@@ -281,8 +300,8 @@ export default function AdminDashboard() {
 
         <div className="px-8 py-6 space-y-5">
 
-          {/* ── KPI cards ── */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* ── KPI cards — step 2 ── */}
+          <div data-tour="admin-kpi-grid" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {loading
               ? Array.from({ length: 4 }).map((_, i) => (
                   <SectionCard key={i} className="p-5">
@@ -308,8 +327,8 @@ export default function AdminDashboard() {
                 ))}
           </div>
 
-          {/* ── Hourly chart ── */}
-          <SectionCard className="p-6">
+          {/* ── Hourly chart — step 3 ── */}
+          <SectionCard data-tour="admin-hourly-chart" className="p-6">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <p className="text-sm font-medium text-white">Revenue by hour</p>
@@ -365,8 +384,8 @@ export default function AdminDashboard() {
           {/* ── Bottom two-col ── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-            {/* Top items */}
-            <SectionCard className="p-6">
+            {/* Top items — step 4 */}
+            <SectionCard data-tour="admin-top-items" className="p-6">
               <div className="mb-5">
                 <p className="text-sm font-medium text-white">Top items</p>
                 <p className="text-xs text-neutral-600 mt-0.5">Most ordered today</p>
@@ -419,9 +438,13 @@ export default function AdminDashboard() {
               )}
             </SectionCard>
 
-            {/* Active orders */}
-            <SectionCard className="overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+            {/* Active orders — step 5 */}
+            <SectionCard  className="overflow-hidden">
+              <div 
+                className="px-6 py-4 border-b border-white/5 flex items-center justify-between"
+                data-tour="admin-active-orders"
+                // data-tour="admin-active-orders"
+                >
                 <div>
                   <p className="text-sm font-medium text-white">Active orders</p>
                   <p className="text-xs text-neutral-600 mt-0.5">
@@ -430,7 +453,9 @@ export default function AdminDashboard() {
                       : "No active orders"}
                   </p>
                 </div>
+                {/* ── step 6: "View all" link ── */}
                 <Link
+                  data-tour="admin-view-all-orders"
                   to="/demo/admin/orders"
                   className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
                 >
