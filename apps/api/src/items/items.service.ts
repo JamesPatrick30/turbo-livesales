@@ -54,20 +54,4 @@ export class ItemsService {
         return { message: 'Item updated successfully', updatedItem };
     }
 
-    async deleteItem(itemId: string, adminOwnerId: string): Promise<{ message: string }> {
-
-        const isHereItem = await this.prisma.client.menuItem.findUnique({
-            where: { id: itemId, adminOwnerId: adminOwnerId },
-        });
-
-        if (!isHereItem) {
-            throw new NotFoundException('Item not found');
-        }
-
-        await this.prisma.client.menuItem.delete({
-            where: { id: itemId, adminOwnerId: adminOwnerId },
-        });
-
-        return { message: 'Item deleted successfully' };
-    }
 }

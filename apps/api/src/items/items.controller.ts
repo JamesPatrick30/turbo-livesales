@@ -38,14 +38,4 @@ export class ItemsController {
         const adminOwnerId = ( req.user as any).id;
         return this.itemsService.updateItem(itemId, updateDto, adminOwnerId);
     }
-
-    @UseGuards(AdminGuard)
-    @Delete('delete/:id')
-    async deleteItem(
-        @Param('id') itemId: string,
-        @Req() req: Request
-    ): Promise<{ message: string }> {
-        const adminOwnerId = ( req.user as any).id;
-        return this.itemsService.deleteItem(itemId, adminOwnerId);
-    }
 }
