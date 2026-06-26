@@ -94,25 +94,16 @@ export default function AdminMenu() {
       }
     };
 
-    const HandleDeleteItem = async (id: string) => {
-      try {
-        const response = await api.delete(`/items/delete/${id}`);
-        toast.success(response.data.message || "Item deleted successfully");
-        // Remove the item from the local state
-        setMenuItems(prevItems => prevItems.filter(item => item.id !== id));
-        setFetchMenuItems(prevItems => prevItems.filter(item => item.id !== id));
-      }catch(err: any) {
-        toast.dismiss();
-        console.error("Error deleting item:", err.response?.data || err.message);
-        toast.error(err.response?.data?.message || "Failed to delete item");
-      }
-    };
-
   return (
     <div className="flex min-h-screen bg-[#0d0d0f] text-white">
       <AdminCreateMenuItemModal isOpen={isOpenCreateModal} onClose={HandleOnCloseCreateModal} onSave={HandleSaveNewItem} />
       <AdminNav />
-      <AdminUpdateMenuItemModal isOpen={isOpenUpdateModal} onClose={() => {}} item={EditItem} onSave={HandleUpdateItem} onDelete={HandleDeleteItem} />
+      <AdminUpdateMenuItemModal
+        isOpen={isOpenUpdateModal}
+        onClose={() => setIsOpenUpdateModal(false)}  // ← this
+        item={EditItem}
+        onSave={HandleUpdateItem}
+      />
       <main className="flex-1 overflow-y-auto">
         {/* Header */}
         <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between">

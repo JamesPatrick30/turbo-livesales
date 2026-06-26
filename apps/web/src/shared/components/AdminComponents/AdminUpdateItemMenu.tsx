@@ -6,12 +6,10 @@ import {
   UtensilsCrossed,
   Tag,
   AlignLeft,
-  DollarSign,
   LayoutGrid,
   CheckCircle2,
   XCircle,
   AlertCircle,
-  AlertTriangle,
   Loader2,
 } from "lucide-react";
 
@@ -63,7 +61,6 @@ export default function AdminUpdateMenuItemModal({
   onClose,
   item,
   onSave,
-  onDelete,
 }: AdminUpdateMenuItemModalProps) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -105,7 +102,7 @@ export default function AdminUpdateMenuItemModal({
 
   useEffect(() => {
     if (!isOpen) return;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = "";
     const handleKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       confirmingDelete ? setConfirmingDelete(false) : handleClose();
@@ -120,6 +117,7 @@ export default function AdminUpdateMenuItemModal({
 
   function handleClose() {
     if (isSubmitting || isDeleting) return;
+    document.body.style.overflow = ""; // ← add this line
     setMounted(false);
     setTimeout(onClose, 150);
   }
@@ -160,17 +158,6 @@ export default function AdminUpdateMenuItemModal({
       handleClose();
     } finally {
       setIsSubmitting(false);
-    }
-  }
-
-  async function handleDelete() {
-    if (!item) return;
-    setIsDeleting(true);
-    try {
-      await onDelete?.(item.id);
-      handleClose();
-    } finally {
-      setIsDeleting(false);
     }
   }
 
@@ -346,44 +333,7 @@ export default function AdminUpdateMenuItemModal({
           </div>
         </div>
 
-        {/* Delete confirmation */}
-        {confirmingDelete ? (
-          <div className="mt-6 rounded-lg border border-red-500/30 bg-red-500/10 p-3">
-            <p className="flex items-start gap-2 text-sm text-red-300">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              Remove <span className="font-medium">"{item.name}"</span> from the menu? This can't be undone.
-            </p>
-            <div className="mt-3 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setConfirmingDelete(false)}
-                disabled={isDeleting}
-                className="rounded-lg px-3 py-1.5 text-sm text-neutral-400 hover:text-neutral-200 disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="flex items-center gap-2 rounded-lg bg-red-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isDeleting ? (
-                  <><Loader2 className="h-3.5 w-3.5 animate-spin" />Deleting...</>
-                ) : "Delete permanently"}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-4">
-            <button
-              type="button"
-              onClick={() => setConfirmingDelete(true)}
-              disabled={isSubmitting}
-              className="rounded-lg px-3 py-2 text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:pointer-events-none disabled:opacity-40"
-            >
-              Delete item
-            </button>
+        <div className="mt-6 flex items-center justify-end border-t border-white/5 pt-4 w-full">
             <div className="flex gap-3">
               <button
                 type="button"
@@ -404,7 +354,6 @@ export default function AdminUpdateMenuItemModal({
               </button>
             </div>
           </div>
-        )}
       </form>
     </div>
   );
