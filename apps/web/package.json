@@ -13,6 +13,7 @@
     "@repo/types": "workspace:*",
     "@tailwindcss/vite": "^4.3.0",
     "axios": "^1.17.0",
+    "driver.js": "^1.6.0",
     "lucide-react": "^1.21.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
