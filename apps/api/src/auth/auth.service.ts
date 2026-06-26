@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { LoginRequest, LoginResponse } from '@repo/types';
 import { JwtService } from '@nestjs/jwt';
-import type { Response } from 'Express';
+import type { Response } from 'express';
 import * as bcrypt from 'bcrypt';
 
 //database

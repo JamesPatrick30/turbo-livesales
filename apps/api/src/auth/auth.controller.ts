@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Res, Get, UseGuards, Req, Patch } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
-import type { Response, Request } from 'Express';
+import type { Response, Request } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshGuard } from './guards/refresh.guard';
 import { Throttle } from '@nestjs/throttler';
