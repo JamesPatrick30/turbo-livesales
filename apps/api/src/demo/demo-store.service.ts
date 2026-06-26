@@ -1,8 +1,11 @@
 // demo/demo-store.service.ts
 import { Injectable } from '@nestjs/common';
-
+import { RealtimeService } from 'src/realtime/realtime.service';
 @Injectable()
 export class DemoStoreService {
+
+    constructor(private readonly realtimeService: RealtimeService) {}
+
     private orders = new Map<string, any>();
     private nextSequence = 1;
 
@@ -63,6 +66,9 @@ export class DemoStoreService {
         };
 
         this.orders.set(id, order);
+
+        this.realtimeService.emit("newOrder", { sale: order }, adminOwnerId);
+        
         return order;
     }
 
@@ -123,6 +129,15 @@ export class DemoStoreService {
         };
 
         this.orders.set(orderId, updated);
+        this.realtimeService.emit(
+            'orderStatusUpdated',
+            {
+                id: updated.id,
+                orderstatus: updated.orderstatus,
+            },
+            updated.adminOwnerId,
+        );
+
         return { message: 'Order status updated successfully', data: updated };
     }
 
@@ -132,6 +147,14 @@ export class DemoStoreService {
 
         const updated = { ...order, orderstatus: 'PREPARING', readyAt: null };
         this.orders.set(orderId, updated);
+        this.realtimeService.emit(
+            'newOrder',
+            {
+                id: updated.id,
+                orderstatus: updated.orderstatus,
+            },
+            updated.adminOwnerId,
+        );
         return updated;
     }
 

@@ -4,6 +4,7 @@ import { LoginDto } from './dtos/login.dto';
 import type { Response, Request } from 'Express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshGuard } from './guards/refresh.guard';
+import { Throttle } from '@nestjs/throttler';
 
 // demo
 import { DemoAllowed } from '../demo/demo-allowed.decorator';
@@ -15,6 +16,12 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @Throttle({
+    default: {
+      limit: 5, // Allow 5 requests
+      ttl: 60_000, // 1 minute
+    }, // Allow 5 requests`
+  }) // Limit to 5 requests per minute
   @DemoAllowed()  // Mark this endpoint as allowed to mutate data even in demo mode
   login(
     @Body() body: LoginDto,
@@ -24,6 +31,12 @@ export class AuthController {
   }
 
   @Post('signup')
+  @Throttle({
+    default: {
+      limit: 5, // Allow 5 requests
+      ttl: 60_000, // 1 minute
+    }, // Allow 5 requests`
+  }) // Limit to 5 requests per minute
   signup(
     @Body() body: SignupDto,
     @Res({ passthrough: true }) res: Response
