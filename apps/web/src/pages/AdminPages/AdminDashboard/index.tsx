@@ -104,6 +104,25 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [simRunning, setSimRunning] = useState(false);
+  const [simLoading, setSimLoading] = useState(false);
+
+  const toggleSimulation = useCallback(async () => {
+    setSimLoading(true);
+    try {
+      if (simRunning) {
+        await api.post('/demo/simulate/stop');
+        setSimRunning(false);
+      } else {
+        await api.post('/demo/simulate/start');
+        setSimRunning(true);
+      }
+    } catch (err) {
+      console.error('Simulation toggle error:', err);
+    } finally {
+      setSimLoading(false);
+    }
+  }, [simRunning]);
   // ── Tour ────────────────────────────────────────────────────────────────────
   const { startTour } = useTour({
     tourKey: "admin_dashboard",
@@ -116,65 +135,73 @@ export default function AdminDashboard() {
   const fetchDashboard = useCallback(async () => {
     try {
       setError(null);
-      const [metricsRes, hourlyRes, topRes, ordersRes] = await Promise.all([
-        api.get("/dashboard/metrics"),
-        api.get("/dashboard/hourly-sales"),
-        api.get("/dashboard/top-items"),
-        api.get("/dashboard/active-orders"),
+      const [metricsRes, hourlyRes, topRes, ordersRes, simRes] = await Promise.all([
+        api.get('/dashboard/metrics'),
+        api.get('/dashboard/hourly-sales'),
+        api.get('/dashboard/top-items'),
+        api.get('/dashboard/active-orders'),
+        api.get('/demo/simulate/status'),          // ← added
       ]);
       setMetrics(metricsRes.data);
       setHourlySales(hourlyRes.data);
       setTopItems(topRes.data);
       setActiveOrders(ordersRes.data);
+      setSimRunning(simRes.data.running);          // ← sync sim state
     } catch (err) {
-      console.error("Dashboard fetch error:", err);
-      setError("Failed to load dashboard data.");
+      console.error('Dashboard fetch error:', err);
+      setError('Failed to load dashboard data.');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // ── Socket ─────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     fetchDashboard();
-
-    socket.connect();
-
-    socket.on("newOrder", (payload: any) => {
-      const sale = payload?.sale ?? payload;
-      const mapped: ActiveOrder = {
-        id: sale.id,
-        receiptNo: sale.receiptNo,
-        table:
-          sale.Ordertype === "DINE_IN"  ? "Dine In"  :
-          sale.Ordertype === "TAKEAWAY" ? "Takeout"  : "Delivery",
-        items: Array.isArray(sale.items) ? sale.items.length : 0,
-        total: parseFloat(sale.total ?? "0"),
-        status: (sale.orderstatus ?? "PENDING").toLowerCase(),
-        time: new Date(sale.createdAt).toLocaleTimeString("en-PH", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        }),
-      };
-      setActiveOrders((prev) => [mapped, ...prev].slice(0, 20));
-      api.get("/dashboard/metrics").then((r) => setMetrics(r.data)).catch(() => {});
-    });
-
-    socket.on("orderStatusUpdated", (payload: any) => {
-      const { id, orderstatus } = payload;
-      setActiveOrders((prev) =>
-        prev.map((order) => (order.id === id ? { ...order, status: orderstatus.toLowerCase() } : order))
-      );
-    });
-
-    return () => {
-      socket.off("newOrder");
-      socket.off("orderStatusUpdated");
-      socket.disconnect();
-    };
   }, [fetchDashboard]);
+
+useEffect(() => {
+  const handleNewOrder = (payload: any) => {
+    const sale = payload.sale;
+    const mapped: ActiveOrder = {
+      id: sale.id,
+      receiptNo: sale.receiptNo,
+      table:
+        sale.Ordertype === "DINE_IN"  ? "Dine In"  :
+        sale.Ordertype === "TAKEAWAY" ? "Takeout"  : "Delivery",
+      items: Array.isArray(sale.items) ? sale.items.length : 0,
+      total: parseFloat(sale.total ?? "0"),
+      status: (sale.orderstatus ?? "PENDING").toLowerCase(),
+      time: new Date(sale.createdAt).toLocaleTimeString("en-PH", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }),
+    };
+    setActiveOrders((prev) => [mapped, ...prev].slice(0, 20));
+    api.get("/dashboard/metrics")
+      .then((r) => setMetrics(r.data))
+      .catch((err) => console.warn("Metrics refresh failed:", err));
+  };
+
+  const handleStatusUpdate = (payload: any) => {
+    const { id, orderstatus } = payload;
+    setActiveOrders((prev) =>
+      prev.map((order) =>
+        order.id === id ? { ...order, status: orderstatus.toLowerCase() } : order
+      )
+    );
+  };
+
+  socket.connect();
+  socket.on("newOrder", handleNewOrder);
+  socket.on("orderStatusUpdated", handleStatusUpdate);
+
+  return () => {
+    socket.off("newOrder", handleNewOrder);
+    socket.off("orderStatusUpdated", handleStatusUpdate);
+  };
+}, [socket]);
 
   // ── Derived values ─────────────────────────────────────────────────────────
 
@@ -263,10 +290,34 @@ export default function AdminDashboard() {
 
           {/* Right side: tour button + refresh */}
           <div className="flex items-center gap-2">
-            {/* ① Tour re-trigger button */}
             <TourButton onClick={startTour} />
 
-            {/* ② Refresh — data-tour target for step 1 */}
+            {/* ── Simulation toggle ── */}
+            <button
+              onClick={toggleSimulation}
+              disabled={simLoading}
+              className={`flex items-center gap-1.5 text-xs transition-colors px-3 py-1.5 rounded-lg border disabled:opacity-40 ${
+                simRunning
+                  ? 'text-amber-400 border-amber-500/30 bg-amber-500/8 hover:bg-amber-500/12'
+                  : 'text-neutral-500 hover:text-white border-white/6 hover:border-white/10 bg-white/2 hover:bg-white/5'
+              }`}
+            >
+              {simLoading ? (
+                <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                  <path d="M21 3v5h-5"/>
+                </svg>
+              ) : simRunning ? (
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+              ) : (
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+              )}
+              {simRunning ? 'Simulating' : 'Simulate'}
+            </button>
+
+            {/* ── Refresh ── */}
             <button
               data-tour="admin-refresh"
               onClick={fetchDashboard}
@@ -274,7 +325,7 @@ export default function AdminDashboard() {
               className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-white transition-colors px-3 py-1.5 rounded-lg border border-white/6 hover:border-white/10 bg-white/2 hover:bg-white/5 disabled:opacity-40"
             >
               <svg
-                className={`w-3 h-3 ${loading ? "animate-spin" : ""}`}
+                className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`}
                 viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
               >
                 <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>

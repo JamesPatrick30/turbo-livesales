@@ -296,4 +296,8 @@ export class DemoStoreService {
         { id: 'demo-5', receiptNo: 'LS-20250101-0005', table: 'Dine In',  items: 5, total: 875.00, status: 'served',    time: t(15) },
         ];
     }
+
+    removeOrder(orderId: string) {
+        this.orders.delete(orderId);
+    }
 }
